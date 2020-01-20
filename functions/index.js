@@ -159,7 +159,20 @@ function checkFallback(agent) {
 
     });
   }
- 
+
+function talk4For(agent)
+{
+    var ran = randomInt(0,4);
+    return ref.once(`value`).then((snapshot)=>{
+        var idiom = snapshot.child(`idioms/${ran}`).val();
+        // eslint-disable-next-line promise/always-return
+        if(idiom !== null){
+            agent.add(`${idiom}`);
+            agent.add(new Suggestion(`Suivant`));
+            agent.add(new Suggestion(`Annuler`));
+        }
+    });
+}
 
 function welcome(agent) {
  
@@ -226,6 +239,7 @@ intentMap.set('Test', test);
 intentMap.set('Random', randomQ);
 intentMap.set('checkAnswers', checkAnswer);
 intentMap.set('Answers - fallback', checkFallback);
+intentMap.set('Idioms', talk4For);
 agent.handleRequest(intentMap);
 });
 
