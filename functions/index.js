@@ -14,7 +14,7 @@ const FB = require('fb');
 const Facebook = require('facebook-node-sdk');
 const {google} = require('googleapis');
 const {WebhookClient} = require('dialogflow-fulfillment');
-const {Card, Suggestion} = require('dialogflow-fulfillment');
+const {Card, Suggestion, Payload} = require('dialogflow-fulfillment');
 admin.initializeApp({
     credential: admin.credential.applicationDefault(),
     databaseURL: `ws://mr-fap-naainy.firebaseio.com/`
@@ -39,9 +39,10 @@ exports.chatBot = functions.https.onRequest((request, response) => {
 	return min + Math.floor((max - min) * Math.random());
 }
 
-var ID = randomInt(0,7);
+var ID = randomInt(0,7); // Global random seed for question's ID
 
-function randomQ(agent)
+// Asking a random question from database 
+function askRandom(agent)
 {      
     return ref.once(`value`).then((snapshot)=>{
         var question = snapshot.child(`questions/${ID}`).val();
@@ -54,7 +55,38 @@ function randomQ(agent)
         // eslint-disable-next-line promise/always-return
         if(question !== null)
         {
+            // let payload = {
+            //     "messages":{
+            //       "attachment": {
+            //         "type": "quick_replies",
+            //         "payload": {
+            //             elements: [
+            //                 {
+            //                   text: 'Choisissez une bonne réponse',
+            //                   quick_replies: [
+            //                     {
+            //                       title: `${answer0}`
+            //                     },
+            //                     {
+            //                       title: `${answer1}`
+            //                     },
+            //                     {
+            //                       title: `${answer2}`
+            //                     },
+            //                     {
+            //                       title: `${answer3}`
+            //                     }
+            //                   ]
+            //                 }
+            //               ]
+            //            }
+            //       }
+            //     }
+            //   }
+
             agent.add(`[${ID+1}] - ${question}`);
+            // agent.requestSource = agent.facebook;
+            //agent.add(new Payload('facebook', payload));
             agent.add(new Suggestion(`${answer0}`));
             agent.add(new Suggestion(`${answer1}`));
             agent.add(new Suggestion(`${answer2}`));
@@ -65,55 +97,61 @@ function randomQ(agent)
     });
 }
 
-
+// Checking the correct answer of user in 4 answers
 function checkAnswer(agent)
 {
-    const context = agent.context.get('answers-followup');
-    const any = context.parameters ? context.parameters.answer : undefined;
+    // const context = agent.context.get('answers-followup');
+    // const any = context.parameters ? context.parameters.answer : undefined;
 
-    if(!context || !any)
-    {
-        agent.add(`Je suis désolé, J'ai oublié votre réponse!`);
-        agent.add(`Voulez-vous rejouer?`);
-        agent.add(new Suggestion(`Random`));
-    }
+    // if(!context || !any)
+    // {
+    //     agent.add(`Je suis désolé, J'ai oublié votre réponse!`);
+    //     agent.add(`Voulez-vous rejouer?`);
+    //     agent.add(new Suggestion(`Rejouer`));
+    //     agent.add(new Suggestion(`Annuler`));
+    // }
     //var context = agent.getContext('answers-followup');
-    var userAnswer = agent.parameters['answer'];
+    const context = agent.context.get('answers-followup');
+    // eslint-disable-next-line no-throw-literal
+    if(!context) throw "Answer context is not defined in PreferrenceAdd";
+    var userAnswer = context.parameters['answer'];
     console.log(usersAnswer);
     agent.add(`Votre réponse est ${userAnswer}`);
-    return ref.once(`value`).then((snapshot)=>{
-        var note = snapshot.child(`notes/${ID}`).val();
-        var correct = snapshot.child(`corrects/${ID}`).val();
+    // return ref.once(`value`).then((snapshot)=>{
+    //     var note = snapshot.child(`notes/${ID}`).val();
+    //     var correct = snapshot.child(`corrects/${ID}`).val();
       
-        //var userAnswer = agent.parameters['answer'];
+    //     //var userAnswer = agent.parameters['answer'];
         
-        // eslint-disable-next-line promise/always-return
-        if(userAnswer !== null && correct === userAnswer)
-        {
+    //     // eslint-disable-next-line promise/always-return
+    //     if(userAnswer !== null && correct === userAnswer)
+    //     {
             
-            agent.add(`C'est vrai, ${note}`);
-            agent.context.delete('answers-followup');
-            //agent.add(`La bonne réponse est ${correct}`);
-            //agent.add(`${note}`);
-        }
-        else {
-            agent.add(`C'est incorrect, la bonne réponse est ${correct}, ${note}`); 
-        }
-        // else if(userAnswer !== correct)
-        // {
-        //     if(userAnswer === answer0 || userAnswer === answer1 || userAnswer === answer2 || userAnswer === answer3)
-        //     {
-        //         agent.add(`C'est incorrect, la bonne réponse est ${correct}, ${note}`);
-        //         agent.context.delete('answers-followup');
-        //     }
-        //     else checkFallback(agent);
-        // }
-    });
+    //         agent.add(`C'est vrai, ${note}`);
+    //         agent.context.delete('answers-followup');
+    //         //agent.add(`La bonne réponse est ${correct}`);
+    //         //agent.add(`${note}`);
+    //     }
+    //     else {
+    //         agent.add(`C'est incorrect, la bonne réponse est ${correct}, ${note}`); 
+    //     }
+    //     // else if(userAnswer !== correct)
+    //     // {
+    //     //     if(userAnswer === answer0 || userAnswer === answer1 || userAnswer === answer2 || userAnswer === answer3)
+    //     //     {
+    //     //         agent.add(`C'est incorrect, la bonne réponse est ${correct}, ${note}`);
+    //     //         agent.context.delete('answers-followup');
+    //     //     }
+    //     //     else checkFallback(agent);
+    //     // }
+    // });
 }
 
+// Checking the incorrect answer of user in 4 answers
 function checkFallback(agent) {
     var ran = randomInt(0,4);
     //var context = agent.getContext('answers-followup');
+
     var userAnswer = agent.parameters.any;
     var text1 = `Quelle est votre bonne réponse ?`;
     var text2 = `Votre réponse est ?`;
@@ -160,6 +198,7 @@ function checkFallback(agent) {
     });
   }
 
+// Function is made for 4
 function talk4For(agent)
 {
     var ran = randomInt(0,4);
@@ -174,9 +213,8 @@ function talk4For(agent)
     });
 }
 
+// Default welcome when start to the conversation
 function welcome(agent) {
- 
-    //agent.add(`Bonjour ${user_full_name}, comment allez-vous?`);
 //     return async (dispatch) => {
 //     try {
 //         let url = `https://graph.facebook.com/v5.0/me?fields=id%2Cname&access_token=EAADLSmoiLyMBAD5DRyoXMVMkkOAPT6eCbMiJ15FgCLXpZCRrGGZCiIUeZC9ejvzZBVZAeNt8xFZA6E5oFESTQIZBrrYsVqTnOhiC56ZAeVgBcy2gqE3PDLP3eAc0oKkZCwvUe5BIdRLfIrffokpk36JdYjNpm8NvP9jV0Vw9y2uSUje3LhrO7TD0B4zI6wwRZAq24ZD`;
@@ -192,11 +230,12 @@ function welcome(agent) {
 //         console.log("caught", error);
 //     }
 //    }
-    agent.add(`Bonjour $user_full_name, que voulez-vous faire ?`);
+    agent.add(`Bonjour ${{user_full_name}}, que voulez-vous faire ?`); // Greeting to the facebook messenger user name
     agent.add(new Suggestion(`Random Question`));
     agent.add(new Suggestion(`Talk 4 For`));
 }
- 
+
+// Default fallback when the chatbot did not understand
 function fallback(agent) {
     agent.add(`I didn't understand`);
     agent.add(`I'm sorry, can you try again?`);
@@ -205,6 +244,7 @@ function fallback(agent) {
   // // Uncomment and edit to make your own intent handler
   // // uncomment `intentMap.set('your intent name here', yourFunctionHandler);`
   // // below to get this function to be run when a Dialogflow intent is matched
+  // Just testing
   function test(agent) {
     agent.add(`This message is from Dialogflow's Cloud Functions for Firebase editor!`);
     agent.add(new Card({
@@ -236,8 +276,8 @@ let intentMap = new Map();
 intentMap.set('Default Welcome Intent', welcome);
 //intentMap.set('Default Fallback Intent', fallback);
 intentMap.set('Test', test);
-intentMap.set('Random', randomQ);
-intentMap.set('checkAnswers', checkAnswer);
+intentMap.set('Random', askRandom);
+intentMap.set('Answers', checkAnswer);
 intentMap.set('Answers - fallback', checkFallback);
 intentMap.set('Idioms', talk4For);
 agent.handleRequest(intentMap);
