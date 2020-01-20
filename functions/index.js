@@ -39,7 +39,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
 	return min + Math.floor((max - min) * Math.random());
 }
 
-var ID = randomInt(0,4)
+var ID = randomInt(0,7);
 
 function randomQ(agent)
 {      
@@ -68,22 +68,97 @@ function randomQ(agent)
 
 function checkAnswer(agent)
 {
+    const context = agent.context.get('answers-followup');
+    const any = context.parameters ? context.parameters.answer : undefined;
+
+    if(!context || !any)
+    {
+        agent.add(`Je suis désolé, J'ai oublié votre réponse!`);
+        agent.add(`Voulez-vous rejouer?`);
+        agent.add(new Suggestion(`Random`));
+    }
+    //var context = agent.getContext('answers-followup');
+    var userAnswer = agent.parameters['answer'];
+    console.log(usersAnswer);
+    agent.add(`Votre réponse est ${userAnswer}`);
     return ref.once(`value`).then((snapshot)=>{
         var note = snapshot.child(`notes/${ID}`).val();
         var correct = snapshot.child(`corrects/${ID}`).val();
+      
+        //var userAnswer = agent.parameters['answer'];
+        
         // eslint-disable-next-line promise/always-return
-        if(question !== null)
+        if(userAnswer !== null && correct === userAnswer)
         {
-            agent.add(`[${ID+1}] - ${question}`);
-            agent.add(new Suggestion(`${answer0}`));
-            agent.add(new Suggestion(`${answer1}`));
-            agent.add(new Suggestion(`${answer2}`));
-            agent.add(new Suggestion(`${answer3}`));
+            
+            agent.add(`C'est vrai, ${note}`);
+            agent.context.delete('answers-followup');
             //agent.add(`La bonne réponse est ${correct}`);
             //agent.add(`${note}`);
         }
+        else {
+            agent.add(`C'est incorrect, la bonne réponse est ${correct}, ${note}`); 
+        }
+        // else if(userAnswer !== correct)
+        // {
+        //     if(userAnswer === answer0 || userAnswer === answer1 || userAnswer === answer2 || userAnswer === answer3)
+        //     {
+        //         agent.add(`C'est incorrect, la bonne réponse est ${correct}, ${note}`);
+        //         agent.context.delete('answers-followup');
+        //     }
+        //     else checkFallback(agent);
+        // }
     });
 }
+
+function checkFallback(agent) {
+    var ran = randomInt(0,4);
+    //var context = agent.getContext('answers-followup');
+    var userAnswer = agent.parameters.any;
+    var text1 = `Quelle est votre bonne réponse ?`;
+    var text2 = `Votre réponse est ?`;
+    var text3 = `Choisissez une réponse ci-dessous`;
+    var text4 = `Choisissez la bonne réponse, s'il vous plaît`;
+    return ref.once(`value`).then((snapshot)=>{
+        //var question = snapshot.child(`questions/${ID}`).val();
+        var answer0 = snapshot.child(`answers/${ID}/0`).val();
+        var answer1 = snapshot.child(`answers/${ID}/1`).val();
+        var answer2 = snapshot.child(`answers/${ID}/2`).val();
+        var answer3 = snapshot.child(`answers/${ID}/3`).val();
+        // eslint-disable-next-line promise/always-return
+        if(userAnswer !== answer0 || userAnswer !== answer1 || userAnswer !== answer2 || userAnswer !== answer3)
+        {
+            switch(ran)
+            {
+                case 0: agent.add(text1);
+                        agent.add(new Suggestion(`${answer0}`));
+                        agent.add(new Suggestion(`${answer1}`));
+                        agent.add(new Suggestion(`${answer2}`));
+                        agent.add(new Suggestion(`${answer3}`));
+                        break;
+                case 1: agent.add(text2);
+                        agent.add(new Suggestion(`${answer0}`));
+                        agent.add(new Suggestion(`${answer1}`));
+                        agent.add(new Suggestion(`${answer2}`));
+                        agent.add(new Suggestion(`${answer3}`));
+                        break;
+                case 2: agent.add(text3);
+                        agent.add(new Suggestion(`${answer0}`));
+                        agent.add(new Suggestion(`${answer1}`));
+                        agent.add(new Suggestion(`${answer2}`));
+                        agent.add(new Suggestion(`${answer3}`));
+                        break;
+                case 3: agent.add(text4);
+                        agent.add(new Suggestion(`${answer0}`));
+                        agent.add(new Suggestion(`${answer1}`));
+                        agent.add(new Suggestion(`${answer2}`));
+                        agent.add(new Suggestion(`${answer3}`));
+                        break; 
+            }
+        }
+
+    });
+  }
  
 
 function welcome(agent) {
@@ -104,7 +179,9 @@ function welcome(agent) {
 //         console.log("caught", error);
 //     }
 //    }
-    agent.add(`Bonjour`+ `Comment allez-vous ?`);
+    agent.add(`Bonjour $user_full_name, que voulez-vous faire ?`);
+    agent.add(new Suggestion(`Random Question`));
+    agent.add(new Suggestion(`Talk 4 For`));
 }
  
 function fallback(agent) {
@@ -147,7 +224,8 @@ intentMap.set('Default Welcome Intent', welcome);
 //intentMap.set('Default Fallback Intent', fallback);
 intentMap.set('Test', test);
 intentMap.set('Random', randomQ);
-// intentMap.set('your intent name here', googleAssistantHandler);
+intentMap.set('checkAnswers', checkAnswer);
+intentMap.set('Answers - fallback', checkFallback);
 agent.handleRequest(intentMap);
 });
 
