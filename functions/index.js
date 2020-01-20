@@ -230,7 +230,8 @@ function welcome(agent) {
 //         console.log("caught", error);
 //     }
 //    }
-    agent.add(`Bonjour ${{user_full_name}}, que voulez-vous faire ?`); // Greeting to the facebook messenger user name
+    var user_full_name = "chienne";
+    agent.add(`Bonjour ${user_full_name}, que voulez-vous faire ?`); // Greeting to the facebook messenger user name
     agent.add(new Suggestion(`Random Question`));
     agent.add(new Suggestion(`Talk 4 For`));
 }
