@@ -113,21 +113,36 @@ exports.chatBot = functions.https.onRequest((request, response) => {
 
         return ref.once(`value`).then((snapshot)=>{
             var ans = agent.parameters['answer'];
+            var correctNumber;
+            var explication;
             var check;
             agent.add(`Votre réponse est "${ans}"`);
             // eslint-disable-next-line promise/always-return
             for(var i = 0; i < 7; i++){
                 var CorrectAnswer = snapshot.child(`corrects/${i}`).val();
                 if(ans === CorrectAnswer) {
-                    agent.add(`Correct`);
+                    agent.add(`C'est Correct :D`);
+                    correctNumber = i;
                     check = true;
                 }
                 // agent.add(`${CorrectAnswer}`);
             }
             // eslint-disable-next-line promise/always-return
             if(check !== true){
-                agent.add(`Incorrect :(`);
+                agent.add(`Ce n'est pas correct :(`);
+                for(var j=0; j<7; j++)
+                    for(var k=0; k<4; k++){
+                        // agent.add(`${ans}`);
+                        CorrectAnswer = snapshot.child(`answers/${j}/${k}`).val();
+                        // agent.add(`${CorrectAnswer}`);
+                        if(ans === CorrectAnswer) {
+                            correctNumber = j;
+                        }     
+                    }
             }
+            
+            explication = snapshot.child(`notes/${correctNumber}`).val();
+            agent.add(`${explication}`);
 
             agent.add(new Suggestion(`Random Question`));
             agent.add(new Suggestion(`Annuler`));
