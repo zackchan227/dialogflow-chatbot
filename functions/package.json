@@ -21,7 +21,9 @@
     "fb": "^2.0.0",
     "firebase-admin": "^5.13.1",
     "firebase-functions": "^3.3.0",
-    "googleapis": "^34.0.0"
+    "google-translate-api": "^2.3.0",
+    "googleapis": "^34.0.0",
+    "languagedetect": "^2.0.0"
   },
   "devDependencies": {
     "eslint": "^5.12.0",

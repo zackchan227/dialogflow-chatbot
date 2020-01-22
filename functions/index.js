@@ -12,6 +12,10 @@ const axios = require('axios');
 //const request = require('request-promise');
 const FB = require('fb');
 const Facebook = require('facebook-node-sdk');
+const translate = require('google-translate-api');
+const LanguageDetect = require('languagedetect');
+const lngDetector = new LanguageDetect();
+lngDetector.setLanguageType("iso2");
 const {google} = require('googleapis');
 const {WebhookClient} = require('dialogflow-fulfillment');
 const {Card, Suggestion, Payload} = require('dialogflow-fulfillment');
@@ -23,7 +27,6 @@ admin.initializeApp({
 const ref = admin.database().ref(`data`);
 var facebook = new Facebook({ appID: '223520468643619', secret: 'nothing' });
 
-
 process.env.DEBUG = 'dialogflow:debug'; // enables lib debugging statements
  
 exports.chatBot = functions.https.onRequest((request, response) => {
@@ -34,8 +37,12 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     function randomInt(min, max) {
         return min + Math.floor((max - min) * Math.random());
     }
+    const ID = randomInt(0,7); // Global random seed for question's ID
 
-    var ID = randomInt(0,7); // Global random seed for question's ID
+   function saveID(id)
+   {
+       return id;
+   }
 
     function askRandom(agent)
     {      
@@ -95,139 +102,100 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     // Checking the correct answer of user in 4 answers
     function checkAnswer(agent)
     {
-        // const context = agent.context.get('answers-followup');
-        // const any = context.parameters ? context.parameters.answer : undefined;
-
-        // if(!context || !any)
-        // {
-        //     agent.add(`Je suis désolé, J'ai oublié votre réponse!`);
-        //     agent.add(`Voulez-vous rejouer?`);
-        //     agent.add(new Suggestion(`Rejouer`));
-        //     agent.add(new Suggestion(`Annuler`));
-        // }
-        //var context = agent.getContext('answers-followup');
-        // const context = agent.context.get('answers-followup');
-        // eslint-disable-next-line no-throw-literal
-        // if(!context) throw "Answer context is not defined in PreferrenceAdd";
-        // var userAnswer = context.parameters['answer'];
-
         return ref.once(`value`).then((snapshot)=>{
             var ans = agent.parameters['answer'];
+            var correctAnswer;
             var correctNumber;
             var explication;
-            var check;
+            var check = false;
             agent.add(`Votre réponse est "${ans}"`);
             // eslint-disable-next-line promise/always-return
             for(var i = 0; i < 7; i++){
                 var CorrectAnswer = snapshot.child(`corrects/${i}`).val();
                 if(ans === CorrectAnswer) {
-                    agent.add(`C'est Correct :D`);
-                    correctNumber = i;
+                    agent.add(`C'est Correct :D`);                    
+                    correctNumber = i;                             
                     check = true;
+                    break;
                 }
-                // agent.add(`${CorrectAnswer}`);
             }
             // eslint-disable-next-line promise/always-return
-            if(check !== true){
-                agent.add(`Ce n'est pas correct :(`);
-                for(var j=0; j<7; j++)
-                    for(var k=0; k<4; k++){
-                        // agent.add(`${ans}`);
-                        CorrectAnswer = snapshot.child(`answers/${j}/${k}`).val();
-                        // agent.add(`${CorrectAnswer}`);
-                        if(ans === CorrectAnswer) {
-                            correctNumber = j;
-                        }     
-                    }
+            for(var j=0; j<7; j++){
+                for(var k=0; k<4; k++){
+                    CorrectAnswer = snapshot.child(`answers/${j}/${k}`).val();
+                    if(ans === CorrectAnswer) {
+                        correctNumber = j;          
+                        break;         
+                    }     
+                }
             }
-            
+            //eslint-disable-next-line promise/always-return
+            if(check !== true){ 
+                agent.add(`Ce n'est pas correct :(`);              
+                correctAnswer = snapshot.child(`corrects/${correctNumber}`).val();
+                agent.add(`La bonne réponse est ${correctAnswer}`); 
+                                                                               
+            }       
+            // eslint-disable-next-line promise/always-return
             explication = snapshot.child(`notes/${correctNumber}`).val();
             agent.add(`${explication}`);
 
-            agent.add(new Suggestion(`Random Question`));
-            agent.add(new Suggestion(`Annuler`));
-        });
-        
-        // return ref.once(`value`).then((snapshot)=>{
-        //     var note = snapshot.child(`notes/${ID}`).val();
-        //     var correct = snapshot.child(`corrects/${ID}`).val();
-        
-        //     //var userAnswer = agent.parameters['answer'];
-            
-        //     // eslint-disable-next-line promise/always-return
-        //     if(userAnswer !== null && correct === userAnswer)
-        //     {
-                
-        //         agent.add(`C'est vrai, ${note}`);
-        //         agent.context.delete('answers-followup');
-        //         //agent.add(`La bonne réponse est ${correct}`);
-        //         //agent.add(`${note}`);
-        //     }
-        //     else {
-        //         agent.add(`C'est incorrect, la bonne réponse est ${correct}, ${note}`); 
-        //     }
-        //     // else if(userAnswer !== correct)
-        //     // {
-        //     //     if(userAnswer === answer0 || userAnswer === answer1 || userAnswer === answer2 || userAnswer === answer3)
-        //     //     {
-        //     //         agent.add(`C'est incorrect, la bonne réponse est ${correct}, ${note}`);
-        //     //         agent.context.delete('answers-followup');
-        //     //     }
-        //     //     else checkFallback(agent);
-        //     // }
-        // });
+            agent.add(new Suggestion(`Continuer`));
+            agent.add(new Suggestion(`Annuler`));         
+        });       
+    }
+
+    function testCheck(agent)
+    {
+        var ref = admin.database().ref(`data/corrects`);
+        return ref.orderByValue.once("value", function(snapshot) {
+            var a = agent.parameters['answer'];
+            snapshot.forEach(function(data) {
+              console.log("The " + data.key + " dinosaur's score is " + data.val());
+                if(a === data.val()){
+                    agent.add(`La réponse ${data.val()} pour la question ${data.key} est correct`);
+                }
+            });
+          });
     }
 
     // Checking the incorrect answer of user in 4 answers
     function checkFallback(agent) {
-        var ran = randomInt(0,4);
-        //var context = agent.getContext('answers-followup');
-
-        var userAnswer = agent.parameters.any;
-        var text1 = `Quelle est votre bonne réponse ?`;
-        var text2 = `Votre réponse est ?`;
-        var text3 = `Choisissez une réponse ci-dessous`;
-        var text4 = `Choisissez la bonne réponse, s'il vous plaît`;
+        
         return ref.once(`value`).then((snapshot)=>{
-            //var question = snapshot.child(`questions/${ID}`).val();
-            var answer0 = snapshot.child(`answers/${ID}/0`).val();
-            var answer1 = snapshot.child(`answers/${ID}/1`).val();
-            var answer2 = snapshot.child(`answers/${ID}/2`).val();
-            var answer3 = snapshot.child(`answers/${ID}/3`).val();
+            var ran = randomInt(0,4);
+            var id = saveID(ID);
+            var a0 = snapshot.child(`answers/${id}/0`).val();
+            var a1 = snapshot.child(`answers/${id}/1`).val();
+            var a2 = snapshot.child(`answers/${id}/2`).val();
+            var a3 = snapshot.child(`answers/${id}/3`).val();
+            var text1 = `Quelle est votre bonne réponse ?`;
+            var text2 = `Votre réponse est ?`;
+            var text3 = `Choisissez une réponse ci-dessous`;
+            var text4 = `Choisissez la bonne réponse, s'il vous plaît`;
             // eslint-disable-next-line promise/always-return
-            if(userAnswer !== answer0 || userAnswer !== answer1 || userAnswer !== answer2 || userAnswer !== answer3)
+            switch(ran)
             {
-                switch(ran)
-                {
-                    case 0: agent.add(text1);
-                            agent.add(new Suggestion(`${answer0}`));
-                            agent.add(new Suggestion(`${answer1}`));
-                            agent.add(new Suggestion(`${answer2}`));
-                            agent.add(new Suggestion(`${answer3}`));
-                            break;
-                    case 1: agent.add(text2);
-                            agent.add(new Suggestion(`${answer0}`));
-                            agent.add(new Suggestion(`${answer1}`));
-                            agent.add(new Suggestion(`${answer2}`));
-                            agent.add(new Suggestion(`${answer3}`));
-                            break;
-                    case 2: agent.add(text3);
-                            agent.add(new Suggestion(`${answer0}`));
-                            agent.add(new Suggestion(`${answer1}`));
-                            agent.add(new Suggestion(`${answer2}`));
-                            agent.add(new Suggestion(`${answer3}`));
-                            break;
-                    case 3: agent.add(text4);
-                            agent.add(new Suggestion(`${answer0}`));
-                            agent.add(new Suggestion(`${answer1}`));
-                            agent.add(new Suggestion(`${answer2}`));
-                            agent.add(new Suggestion(`${answer3}`));
-                            break; 
-                }
-            }
+                case 0: agent.add(text1);
 
-        });
-    }
+                        break;
+                case 1: agent.add(text2);
+     
+                        break;
+                case 2: agent.add(text3);
+
+                        break;
+                case 3: agent.add(text4);
+ 
+                        break; 
+            }
+            agent.add(new Suggestion(`${a0}`));
+            agent.add(new Suggestion(`${a1}`));
+            agent.add(new Suggestion(`${a2}`));
+            agent.add(new Suggestion(`${a3}`));
+
+    });
+}
 
     // Function is made for 4
     function talk4For(agent)
@@ -237,12 +205,58 @@ exports.chatBot = functions.https.onRequest((request, response) => {
             var idiom = snapshot.child(`idioms/${ran}`).val();
             // eslint-disable-next-line promise/always-return
             if(idiom !== null){
-                agent.add(`${idiom}`);
-                agent.add(new Suggestion(`Suivant`));
-                agent.add(new Suggestion(`Annuler`));
+                agent.add(`${idiom}`);               
             }
+            else {
+                agent.add(`Je suis désolé, il y a une erreur!`);
+            }
+            agent.add(new Suggestion(`Suivant`));
+            agent.add(new Suggestion(`Annuler`));
         });
     }
+
+    function translateTo(agent){
+        var userInput = agent.parameters['any'];
+        var userLang = agent.parameters['language'];
+        var dectect = lngDetector.dectect(`${userInput}`,1);
+        var lang;
+        switch(`${userLang}`){
+            case "Anglais": lang = 'en'; break;
+            case "Chinois": lang = 'cn'; break;
+            case "Français": lang = 'fr'; break;
+            case "Vietnamien": lang = 'vi'; break;
+        }
+        // eslint-disable-next-line promise/always-return
+        translate(`${userInput}`, {to: `${lang}`}).then(res => {
+            // Note that res.from.text will only be returned if from.text.autoCorrected 
+            // or from.text.didYouMean equals to true.
+            var text = res.text; // user input to translate return string
+            var autoCorrected = res.from.text.autoCorrected; // correct the user input return true-false
+            var value = res.from.text.value; // user input to translate that has corrected return string
+            var didYouMean = res.from.text.didYouMean; // same as auto corrected
+            var iso = res.from.language.iso; // return language's iso code - 2 characters
+            var detect = lngDetector.detect(`${userInput}`,1);
+            agent.add(`${text} with auto corrected = ${autoCorrected} and did you mean = ${didYouMean}`);
+            agent.add(`This is translation language's iso code ${iso}`);
+            agent.add(`This is user input language's iso code ${detect[0]}`);
+            agent.add(`${userInput} en ${lang} = ${value}`);
+            agent.add(`${text}(${detect[0]}) = ${value}(${iso})`);
+        }).catch(err => {
+            console.error(err);
+        });
+    }
+
+    // function languageHandle(agent){
+    //     agent.add(`Dans quelle langue voulez-vous traduire?`);
+    //     agent.add(new Suggestion(`Anglais`));
+    //     agent.add(new Suggestion(`Chinois`));
+    //     agent.add(new Suggestion(`Français`));
+    //     agent.add(new Suggestion(`Vietnamien`));
+    // }
+
+    // function textHandle(agent){
+    //     agent.add("Entrez votre text, svp.");
+    // }
 
     // app.get('/get_fb_profile', function(req, res) {
     //     oauth2.get("https://graph.facebook.com/me", req.session.accessToken, function(err, data ,response) {
@@ -274,9 +288,11 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     //         console.log("caught", error);
     //     }
     //    }
-        var user_full_name = "chienne";
-        agent.add(`Bonjour ${user_full_name}, que voulez-vous faire ?`); // Greeting to the facebook messenger user name
+        var user_full_name = ["chienne","putain", "stupide", "putang ina mo"];
+        var ran = randomInt(0,4);
+        agent.add(`Bonjour ${user_full_name[ran]}, que voulez-vous faire ?`); // Greeting to the facebook messenger user name
         agent.add(new Suggestion(`Random Question`));
+        agent.add(new Suggestion(`Translate`));
         agent.add(new Suggestion(`Talk 4 For`));
     }
 
@@ -296,7 +312,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
         agent.add(`This message is from Dialogflow's Cloud Functions for Firebase editor!`);
         agent.add(new Card({
             title: `Title: this is a card title`,
-            imageUrl: 'https://developers.google.com/actions/images/badges/XPM_BADGING_GoogleAssistant_VER.png',
+            imageUrl: 'https://drive.google.com/file/d/1OKRA4s4HhgfZqVG8C1Q7VPB3Z3_FClHm/view',
             text: `This is the body text of a card.  You can even use line\n  breaks and emoji! 💁`,
             buttonText: 'This is a button',
             buttonUrl: 'https://assistant.google.com/'
@@ -325,8 +341,11 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     intentMap.set('Test', test);   
     intentMap.set('Random', askRandom);
     intentMap.set('Answers', checkAnswer);
-    intentMap.set('Answers - fallback', checkFallback);
+    intentMap.set('AnswersFallback', checkFallback);
     intentMap.set('Idioms', talk4For);
+    //intentMap.set('Text', textHandle);
+    //intentMap.set('Language', languageHandle);
+    intentMap.set('Translate', translateTo);
     agent.handleRequest(intentMap);
 });
 
