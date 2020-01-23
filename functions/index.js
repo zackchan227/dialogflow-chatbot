@@ -218,7 +218,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     function translateTo(agent){
         var userInput = agent.parameters['any'];
         var userLang = agent.parameters['language'];
-        var dectect = lngDetector.dectect(`${userInput}`,1);
+        var detect = lngDetector.detect(`${userInput}`,1);
         var lang;
         switch(`${userLang}`){
             case "Anglais": lang = 'en'; break;
@@ -226,8 +226,9 @@ exports.chatBot = functions.https.onRequest((request, response) => {
             case "Français": lang = 'fr'; break;
             case "Vietnamien": lang = 'vi'; break;
         }
+        agent.add(`Your language is ${detect[0]}`);
         // eslint-disable-next-line promise/always-return
-        translate(`${userInput}`, {to: `${lang}`}).then(res => {
+        return translate(`${userInput}`, {to: `${lang}`}).then(res => {
             // Note that res.from.text will only be returned if from.text.autoCorrected 
             // or from.text.didYouMean equals to true.
             var text = res.text; // user input to translate return string
@@ -236,13 +237,15 @@ exports.chatBot = functions.https.onRequest((request, response) => {
             var didYouMean = res.from.text.didYouMean; // same as auto corrected
             var iso = res.from.language.iso; // return language's iso code - 2 characters
             var detect = lngDetector.detect(`${userInput}`,1);
-            agent.add(`${text} with auto corrected = ${autoCorrected} and did you mean = ${didYouMean}`);
-            agent.add(`This is translation language's iso code ${iso}`);
-            agent.add(`This is user input language's iso code ${detect[0]}`);
-            agent.add(`${userInput} en ${lang} = ${value}`);
-            agent.add(`${text}(${detect[0]}) = ${value}(${iso})`);
-        }).catch(err => {
-            console.error(err);
+            // eslint-disable-next-line promise/always-return
+            if(value !== null){
+                agent.add(`${text} with auto corrected = ${autoCorrected} and did you mean = ${didYouMean}`);
+                agent.add(`This is translation language's iso code ${iso}`);
+                agent.add(`This is user input language's iso code ${detect[0]}`);
+                agent.add(`${userInput} en ${lang} = ${value}`);
+                agent.add(`${text}(${detect[0]}) = ${value}(${iso})`);
+            }
+ 
         });
     }
 
