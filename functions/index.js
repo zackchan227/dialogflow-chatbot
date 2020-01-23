@@ -12,16 +12,15 @@ const axios = require('axios');
 //const request = require('request-promise');
 const FB = require('fb');
 const Facebook = require('facebook-node-sdk');
-const translate = require('google-translate-api');
-const LanguageDetect = require('languagedetect');
-const lngDetector = new LanguageDetect();
-lngDetector.setLanguageType("iso2");
 const {google} = require('googleapis');
+const cloudTranslationAPI = "AIzaSyD2d6e7-Z35jInusbQp92afvgupaxf2KE4";
+const googleTranslate = require('google-translate')(cloudTranslationAPI);
 const {WebhookClient} = require('dialogflow-fulfillment');
 const {Card, Suggestion, Payload} = require('dialogflow-fulfillment');
+const serviceAccount = require("./mr-fap-naainy-firebase-adminsdk-d55vb-67d7b85f0b.json");
 admin.initializeApp({
-    credential: admin.credential.applicationDefault(),
-    databaseURL: `ws://mr-fap-naainy.firebaseio.com/`
+    credential: admin.credential.cert(serviceAccount),
+    databaseURL: `https://mr-fap-naainy.firebaseio.com/`
 });
 
 const ref = admin.database().ref(`data`);
@@ -215,51 +214,59 @@ exports.chatBot = functions.https.onRequest((request, response) => {
         });
     }
 
-    function translateTo(agent){
-        var userInput = agent.parameters['any'];
-        var userLang = agent.parameters['language'];
-        var detect = lngDetector.detect(`${userInput}`,1);
-        var lang;
-        switch(`${userLang}`){
-            case "Anglais": lang = 'en'; break;
-            case "Chinois": lang = 'cn'; break;
-            case "Français": lang = 'fr'; break;
-            case "Vietnamien": lang = 'vi'; break;
+    function translateText(agent){
+        var text = agent.parameters['any'];
+        var lang = agent.parameters['language'];
+        var iso;
+        switch(lang)
+        {
+            case 'Anglais':
+            case 'English':
+            case 'Tiếng Anh':
+            case '英语':
+            case '英文':
+                iso = 'en';
+                break;
+            case 'Française':
+            case 'Français':
+            case 'Francaise':
+            case 'Francais':
+            case 'French':
+            case 'Tiếng Pháp':
+            case '法语':
+            case '法文':
+                iso = 'fr';
+                break;
+            case 'Vietnamien':
+            case 'Vietnamese':
+            case 'Tiếng Việt':
+            case '越南语':
+            case '越南文':
+                iso = 'vi';
+                break;
+            case 'Chinois':
+            case 'Chinese':
+            case 'Tiếng Trung':
+            case 'Tiếng Tàu':
+            case 'Tiếng Hoa':
+            case '中文':
+            case '华语':
+                iso = 'zh';
+                break;
+            default:
+                agent.add(`Pardon, la langue ${lang} n'est pas encore supporté.`);
+
         }
-        agent.add(`Your language is ${detect[0]}`);
-        // eslint-disable-next-line promise/always-return
-        return translate(`${userInput}`, {to: `${lang}`}).then(res => {
-            // Note that res.from.text will only be returned if from.text.autoCorrected 
-            // or from.text.didYouMean equals to true.
-            var text = res.text; // user input to translate return string
-            var autoCorrected = res.from.text.autoCorrected; // correct the user input return true-false
-            var value = res.from.text.value; // user input to translate that has corrected return string
-            var didYouMean = res.from.text.didYouMean; // same as auto corrected
-            var iso = res.from.language.iso; // return language's iso code - 2 characters
-            var detect = lngDetector.detect(`${userInput}`,1);
-            // eslint-disable-next-line promise/always-return
-            if(value !== null){
-                agent.add(`${text} with auto corrected = ${autoCorrected} and did you mean = ${didYouMean}`);
-                agent.add(`This is translation language's iso code ${iso}`);
-                agent.add(`This is user input language's iso code ${detect[0]}`);
-                agent.add(`${userInput} en ${lang} = ${value}`);
-                agent.add(`${text}(${detect[0]}) = ${value}(${iso})`);
+        agent.add(`Votre text: ${text}`);
+        agent.add(`Iso code: ${iso}`);
+        return googleTranslate.translate(text, iso, function(err, translation) {
+            // eslint-disable-next-line no-eq-null
+            if(translation.translatedText !== null){
+                agent.add(`${text} en ${lang} est ${translation.translatedText}`);
             }
- 
-        });
+            else agent.add(`Il y a une erreur ${err}, veuillez réessayer!`);
+        });					
     }
-
-    // function languageHandle(agent){
-    //     agent.add(`Dans quelle langue voulez-vous traduire?`);
-    //     agent.add(new Suggestion(`Anglais`));
-    //     agent.add(new Suggestion(`Chinois`));
-    //     agent.add(new Suggestion(`Français`));
-    //     agent.add(new Suggestion(`Vietnamien`));
-    // }
-
-    // function textHandle(agent){
-    //     agent.add("Entrez votre text, svp.");
-    // }
 
     // app.get('/get_fb_profile', function(req, res) {
     //     oauth2.get("https://graph.facebook.com/me", req.session.accessToken, function(err, data ,response) {
@@ -295,7 +302,6 @@ exports.chatBot = functions.https.onRequest((request, response) => {
         var ran = randomInt(0,4);
         agent.add(`Bonjour ${user_full_name[ran]}, que voulez-vous faire ?`); // Greeting to the facebook messenger user name
         agent.add(new Suggestion(`Random Question`));
-        agent.add(new Suggestion(`Translate`));
         agent.add(new Suggestion(`Talk 4 For`));
     }
 
@@ -346,9 +352,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     intentMap.set('Answers', checkAnswer);
     intentMap.set('AnswersFallback', checkFallback);
     intentMap.set('Idioms', talk4For);
-    //intentMap.set('Text', textHandle);
-    //intentMap.set('Language', languageHandle);
-    intentMap.set('Translate', translateTo);
+    intentMap.set('Translate', translateText);
     agent.handleRequest(intentMap);
 });
 

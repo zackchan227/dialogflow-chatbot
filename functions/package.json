@@ -13,6 +13,7 @@
     "node": "8"
   },
   "dependencies": {
+    "@google-cloud/translate": "^5.1.4",
     "actions-on-google": "^2.2.0",
     "axios": "^0.19.1",
     "dialogflow": "^0.6.0",
@@ -21,6 +22,7 @@
     "fb": "^2.0.0",
     "firebase-admin": "^5.13.1",
     "firebase-functions": "^3.3.0",
+    "google-translate": "^3.0.0",
     "google-translate-api": "^2.3.0",
     "googleapis": "^34.0.0",
     "languagedetect": "^2.0.0"
