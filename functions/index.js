@@ -1,9 +1,7 @@
-/* eslint-disable handle-callback-err */
-/* eslint-disable prefer-arrow-callback */
-/* eslint-disable promise/catch-or-return */
 // See https://github.com/dialogflow/dialogflow-fulfillment-nodejs
 // for Dialogflow fulfillment library docs, samples, and to report issues
 'use strict';
+
 
 
 const functions = require('firebase-functions');
@@ -12,9 +10,14 @@ const axios = require('axios');
 //const request = require('request-promise');
 const FB = require('fb');
 const Facebook = require('facebook-node-sdk');
-const {google} = require('googleapis');
-const cloudTranslationAPI = "AIzaSyD2d6e7-Z35jInusbQp92afvgupaxf2KE4";
-const googleTranslate = require('google-translate')(cloudTranslationAPI);
+//const {google} = require('googleapis');
+const projectId = 'mr-fap-naainy';
+const {Translate} = require('@google-cloud/translate').v2;
+//const projectID = JSON.parse(process.env.FIREBASE_CONFIG).projectId;
+
+const translate = new Translate({projectId});
+
+
 const {WebhookClient} = require('dialogflow-fulfillment');
 const {Card, Suggestion, Payload} = require('dialogflow-fulfillment');
 const serviceAccount = require("./mr-fap-naainy-firebase-adminsdk-d55vb-67d7b85f0b.json");
@@ -144,20 +147,6 @@ exports.chatBot = functions.https.onRequest((request, response) => {
         });       
     }
 
-    function testCheck(agent)
-    {
-        var ref = admin.database().ref(`data/corrects`);
-        return ref.orderByValue.once("value", function(snapshot) {
-            var a = agent.parameters['answer'];
-            snapshot.forEach(function(data) {
-              console.log("The " + data.key + " dinosaur's score is " + data.val());
-                if(a === data.val()){
-                    agent.add(`La réponse ${data.val()} pour la question ${data.key} est correct`);
-                }
-            });
-          });
-    }
-
     // Checking the incorrect answer of user in 4 answers
     function checkFallback(agent) {
         
@@ -214,14 +203,19 @@ exports.chatBot = functions.https.onRequest((request, response) => {
         });
     }
 
-    function translateText(agent){
-        var text = agent.parameters['any'];
-        var lang = agent.parameters['language'];
-        var iso;
+    async function translateText(agent) {       
+        var text = agent.parameters['any']; // The text to translate
+        var lang = agent.parameters['language']; // The target language
+        var iso; // The target language's iso code
+       
         switch(lang)
         {
             case 'Anglais':
             case 'English':
+            case 'tiếng anh':
+            case 'tiếng end':
+            case 'endrjsk':
+            case 'engrisk':
             case 'Tiếng Anh':
             case '英语':
             case '英文':
@@ -232,7 +226,11 @@ exports.chatBot = functions.https.onRequest((request, response) => {
             case 'Francaise':
             case 'Francais':
             case 'French':
+            case 'tiếng pháp':
             case 'Tiếng Pháp':
+            case 'Tiếng FAP':
+            case 'tiếng fap':
+            case 'fap':
             case '法语':
             case '法文':
                 iso = 'fr';
@@ -240,6 +238,11 @@ exports.chatBot = functions.https.onRequest((request, response) => {
             case 'Vietnamien':
             case 'Vietnamese':
             case 'Tiếng Việt':
+            case 'tiếng việt':
+            case 'tiếng vịt':
+            case 'tiếng Vịt':
+            case 'Tiếng Vịt':
+            case 'vịt':
             case '越南语':
             case '越南文':
                 iso = 'vi';
@@ -249,24 +252,27 @@ exports.chatBot = functions.https.onRequest((request, response) => {
             case 'Tiếng Trung':
             case 'Tiếng Tàu':
             case 'Tiếng Hoa':
+            case 'tiếng trung quốc':
+            case 'trung quốc':
+            case 'trung':
+            case 'tiếng tàu':
             case '中文':
             case '华语':
                 iso = 'zh';
                 break;
             default:
+                iso = 'null';
                 agent.add(`Pardon, la langue ${lang} n'est pas encore supporté.`);
-
+                agent.add(new Suggestion(`Random Question`));
+                agent.add(new Suggestion(`Talk 4 For`));
+                return;
         }
-        agent.add(`Votre text: ${text}`);
-        agent.add(`Iso code: ${iso}`);
-        return googleTranslate.translate(text, iso, function(err, translation) {
-            // eslint-disable-next-line no-eq-null
-            if(translation.translatedText !== null){
-                agent.add(`${text} en ${lang} est ${translation.translatedText}`);
-            }
-            else agent.add(`Il y a une erreur ${err}, veuillez réessayer!`);
-        });					
-    }
+     
+        const [translation] = await translate.translate(text, iso);
+        agent.add(`${text} en ${lang}: ${translation}`);
+        agent.add(new Suggestion(`Random Question`));
+        agent.add(new Suggestion(`Talk 4 For`));
+      }
 
     // app.get('/get_fb_profile', function(req, res) {
     //     oauth2.get("https://graph.facebook.com/me", req.session.accessToken, function(err, data ,response) {
