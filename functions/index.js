@@ -1,3 +1,4 @@
+/* eslint-disable promise/always-return */
 // See https://github.com/dialogflow/dialogflow-fulfillment-nodejs
 // for Dialogflow fulfillment library docs, samples, and to report issues
 'use strict';
@@ -110,13 +111,10 @@ exports.chatBot = functions.https.onRequest((request, response) => {
             var correctNumber;
             var explication;
             var check = false;
-            agent.add(`Votre réponse est "${ans}"`);
             // eslint-disable-next-line promise/always-return
             for(var i = 0; i < 7; i++){
                 var CorrectAnswer = snapshot.child(`corrects/${i}`).val();
-                if(ans === CorrectAnswer) {
-                    agent.add(`C'est Correct :D`);                    
-                    correctNumber = i;                             
+                if(ans === CorrectAnswer) {                                                     
                     check = true;
                     break;
                 }
@@ -126,24 +124,34 @@ exports.chatBot = functions.https.onRequest((request, response) => {
                 for(var k=0; k<4; k++){
                     CorrectAnswer = snapshot.child(`answers/${j}/${k}`).val();
                     if(ans === CorrectAnswer) {
-                        correctNumber = j;          
+                        correctNumber = j;      
                         break;         
                     }     
                 }
+            } 
+
+            explication = snapshot.child(`notes/${correctNumber}`).val();
+            if(ans === 'je ne sais pas'){
+                agent.add(`Essayez d'y répondre, ne vous inquiétez pas de l'échec 🤗`);
+            }
+            else if(check === true){
+                agent.add(`C'est Correct :D`);    
+                agent.add(`${explication}`);
             }
             //eslint-disable-next-line promise/always-return
-            if(check !== true){ 
+            else if(check !== true && explication !== null){ 
                 agent.add(`Ce n'est pas correct :(`);              
                 correctAnswer = snapshot.child(`corrects/${correctNumber}`).val();
-                agent.add(`La bonne réponse est ${correctAnswer}`); 
-                                                                               
+                agent.add(`La bonne réponse est ${correctAnswer}`);
+                // eslint-disable-next-line promise/always-return               
+                agent.add(`${explication}`);                                                                                         
             }       
-            // eslint-disable-next-line promise/always-return
-            explication = snapshot.child(`notes/${correctNumber}`).val();
-            agent.add(`${explication}`);
-
-            agent.add(new Suggestion(`Continuer`));
-            agent.add(new Suggestion(`Annuler`));         
+            else {
+                agent.add(`Pardon, il y a une erreur, réessayez!`);
+                
+            }                 
+            agent.add(new Suggestion(`Rejouer`));
+            agent.add(new Suggestion(`Annuler`));    
         });       
     }
 
@@ -289,24 +297,22 @@ exports.chatBot = functions.https.onRequest((request, response) => {
 
     // Default welcome when start to the conversation
     function welcome(agent) {
-    //     return async (dispatch) => {
-    //     try {
-    //         let url = `https://graph.facebook.com/v5.0/me?fields=id%2Cname&access_token=EAADLSmoiLyMBAD5DRyoXMVMkkOAPT6eCbMiJ15FgCLXpZCRrGGZCiIUeZC9ejvzZBVZAeNt8xFZA6E5oFESTQIZBrrYsVqTnOhiC56ZAeVgBcy2gqE3PDLP3eAc0oKkZCwvUe5BIdRLfIrffokpk36JdYjNpm8NvP9jV0Vw9y2uSUje3LhrO7TD0B4zI6wwRZAq24ZD`;
-    //         const response = await axios.get(url)
-    //         let user = response.data
-    //         // var responseText = `Hi there ${user.first_name}, How can i help you today?`
-    //         // Send Your response
-    //         console.log(user);
-    //         if (user === null){
-    //             agent.add(`Hi there ${user.first_name}, How can i help you today?`);
-    //         }
-    //     } catch (error) {
-    //         console.log("caught", error);
-    //     }
-    //    }
-        var user_full_name = ["chienne","putain", "stupide", "putang ina mo"];
+            // let url = `https://graph.facebook.com/v5.0/me?fields=id%2Cname&access_token=EAADLSmoiLyMBAD5DRyoXMVMkkOAPT6eCbMiJ15FgCLXpZCRrGGZCiIUeZC9ejvzZBVZAeNt8xFZA6E5oFESTQIZBrrYsVqTnOhiC56ZAeVgBcy2gqE3PDLP3eAc0oKkZCwvUe5BIdRLfIrffokpk36JdYjNpm8NvP9jV0Vw9y2uSUje3LhrO7TD0B4zI6wwRZAq24ZD`;
+            // const response = await axios.get(url);
+            // let user = response.data;
+            // var responseText = `Hi there ${user.full_name}, How can i help you today?`;
+            // agent.add(`${responseText}`);
+            // // Send Your response
+            // console.log(user);
+            // if (user !== null){
+            //     agent.add(`Hi there ${user.first_name}, How can i help you today?`);
+            //     agent.add(`${responseText}`);
+            //     agent.add(new Suggestion(`Random Question`));
+            //     agent.add(new Suggestion(`Talk 4 For`));
+            // }
+        var user_full_name = "user_name";
         var ran = randomInt(0,4);
-        agent.add(`Bonjour ${user_full_name[ran]}, que voulez-vous faire ?`); // Greeting to the facebook messenger user name
+        agent.add(`Bonjour ${user_full_name}, que voulez-vous faire ?`); // Greeting to the facebook messenger user name
         agent.add(new Suggestion(`Random Question`));
         agent.add(new Suggestion(`Talk 4 For`));
     }
