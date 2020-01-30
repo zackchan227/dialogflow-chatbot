@@ -7,10 +7,12 @@
 
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
-const axios = require('axios');
+//const axios = require('axios');
 //const request = require('request-promise');
-const FB = require('fb');
+//const FB = require('fb');
 const Facebook = require('facebook-node-sdk');
+const request = require('request');
+const rp = require('request-promise-native');
 //const {google} = require('googleapis');
 const projectId = 'mr-fap-naainy';
 const {Translate} = require('@google-cloud/translate').v2;
@@ -282,41 +284,24 @@ exports.chatBot = functions.https.onRequest((request, response) => {
         agent.add(new Suggestion(`Talk 4 For`));
       }
 
-    // app.get('/get_fb_profile', function(req, res) {
-    //     oauth2.get("https://graph.facebook.com/me", req.session.accessToken, function(err, data ,response) {
-    //      if (err) {
-    //       console.error(err);
-    //       res.send(err);
-    //      } else {
-    //       var profile = JSON.parse(data);
-    //       console.log(profile);
-    //       var profile_img_url = "https://graph.facebook.com/"+profile.id+"/picture";
-    //      }
-    //     });
-    // });
-
     // Default welcome when start to the conversation
     function welcome(agent) {
-            // let url = `https://graph.facebook.com/v5.0/me?fields=id%2Cname&access_token=EAADLSmoiLyMBAD5DRyoXMVMkkOAPT6eCbMiJ15FgCLXpZCRrGGZCiIUeZC9ejvzZBVZAeNt8xFZA6E5oFESTQIZBrrYsVqTnOhiC56ZAeVgBcy2gqE3PDLP3eAc0oKkZCwvUe5BIdRLfIrffokpk36JdYjNpm8NvP9jV0Vw9y2uSUje3LhrO7TD0B4zI6wwRZAq24ZD`;
-            // const response = await axios.get(url);
-            // let user = response.data;
-            // var responseText = `Hi there ${user.full_name}, How can i help you today?`;
-            // agent.add(`${responseText}`);
-            // // Send Your response
-            // console.log(user);
-            // if (user !== null){
-            //     agent.add(`Hi there ${user.first_name}, How can i help you today?`);
-            //     agent.add(`${responseText}`);
-            //     agent.add(new Suggestion(`Random Question`));
-            //     agent.add(new Suggestion(`Talk 4 For`));
-            // }
-        var user_full_name = "user_name";
-        var ran = randomInt(0,4);
-        agent.add(`Bonjour ${user_full_name}, que voulez-vous faire ?`); // Greeting to the facebook messenger user name
-        agent.add(new Suggestion(`Random Question`));
-        agent.add(new Suggestion(`Talk 4 For`));
-    }
+        var user_id = agent.originalRequest.payload.data.sender.id;
+        var url = `https://graph.facebook.com/${user_id}?fields=name&access_token=EAADLSmoiLyMBALPNcqIorb0fCE6IpOb6xoxJawelRLZCmZCeuVnAg859nXhimFZCSAK21OT2PclZBT4t7paZANzWH4RDqVsySmASyFrZABmlJOZCYAZBZBaCwVvrxXwmf5PI7GZAvkDGjxOZC0rN2zCZCCzyQ9Dxs6RndIG8RuJNW3ZCG5gZDZD`;
+        var options = {
+          uri: url,
+          json: true
+        };
 
+        return rp.get( options )
+        // eslint-disable-next-line promise/always-return
+        .then( body => {
+            //console.log(body);
+            agent.add(`Bonjour ${body.name}, que-voulez vous faire ?`);
+            agent.add(new Suggestion(`Random Question`));
+            agent.add(new Suggestion(`Talk 4 For`));
+        });
+    }
     // Default fallback when the chatbot did not understand
     function fallback(agent) {
         agent.add(`Je n'ai pas compris`);
