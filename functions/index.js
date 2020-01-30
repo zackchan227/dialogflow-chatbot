@@ -49,6 +49,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
        return id;
    }
 
+    // Generate Random questions 
     function askRandom(agent)
     {      
         return ref.once(`value`).then((snapshot)=>{
@@ -213,6 +214,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
         });
     }
 
+    // Translate function from any languages to another (Available in 4 languages)
     async function translateText(agent) {       
         var text = agent.parameters['any']; // The text to translate
         var lang = agent.parameters['language']; // The target language
