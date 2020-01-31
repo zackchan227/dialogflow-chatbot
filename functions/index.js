@@ -42,17 +42,44 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     function randomInt(min, max) {
         return min + Math.floor((max - min) * Math.random());
     }
-    const ID = randomInt(0,7); // Global random seed for question's ID
+    
+    var ID = randomInt(0,7); // Global random seed for question's ID
 
-   function saveID(id)
-   {
-       return id;
-   }
+    function saveID(id)
+    {
+        return id;
+    }
 
     // Generate Random questions 
     function askRandom(agent)
-    {      
+    {   
         return ref.once(`value`).then((snapshot)=>{
+
+
+            var sumQ = 0;
+            for(var i = 0; i < 7; i++) {
+                if(snapshot.child(`AskRandomQ/${user_id}/${i}`).val() === "True")
+                    sumQ++; 
+            }
+                // admin.database().ref('data/AskRandomQ').child(`${user_id}/${ID}`).set('False');
+            agent.add(`${sumQ}`);
+            
+
+            if(sumQ === 6)
+                for(var j = 0; j < 7; j++) {
+                    admin.database().ref('data/AskRandomQ').child(`${user_id}/${j}`).set('False');
+                }
+                
+
+            var checkQ = snapshot.child(`AskRandomQ/${user_id}/${ID}`).val();
+            while(checkQ === "True"){
+                ID = randomInt(0,7);
+                checkQ = snapshot.child(`AskRandomQ/${user_id}/${ID}`).val();
+                // sumQ++;
+                // if(sumQ === 7)
+                //     for(var i = 0; i < 7; i++)
+                //         admin.database().ref('data/AskRandomQ').child(`${user_id}/${ID}`).set('False');
+            }
             var question = snapshot.child(`questions/${ID}`).val();
             var answer0 = snapshot.child(`answers/${ID}/0`).val();
             var answer1 = snapshot.child(`answers/${ID}/1`).val();
@@ -101,6 +128,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
                 agent.add(new Suggestion(`${answer3}`));
                 //agent.add(`La bonne réponse est ${correct}`);
                 //agent.add(`${note}`);
+                admin.database().ref('data/AskRandomQ').child(`${user_id}/${ID}`).set('True');
             }
         });
     }
@@ -123,7 +151,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
                 }
             }
             // eslint-disable-next-line promise/always-return
-            for(var j=0; j<7; j++){
+            for(var j = 0; j<7; j++){
                 for(var k=0; k<4; k++){
                     CorrectAnswer = snapshot.child(`answers/${j}/${k}`).val();
                     if(ans === CorrectAnswer) {
@@ -286,10 +314,16 @@ exports.chatBot = functions.https.onRequest((request, response) => {
         agent.add(new Suggestion(`Talk 4 For`));
       }
 
+    
+    // Obtenir l'identifiant utilisateur facebook
+    var user_id = agent.originalRequest.payload.data.sender.id;
+
     // Default welcome when start to the conversation
     function welcome(agent) {
-        var user_id = agent.originalRequest.payload.data.sender.id;
+
+        // Appel au graphique Facebook pour obtenir les informations des utilisateurs
         var url = `https://graph.facebook.com/${user_id}?fields=name&access_token=EAADLSmoiLyMBALPNcqIorb0fCE6IpOb6xoxJawelRLZCmZCeuVnAg859nXhimFZCSAK21OT2PclZBT4t7paZANzWH4RDqVsySmASyFrZABmlJOZCYAZBZBaCwVvrxXwmf5PI7GZAvkDGjxOZC0rN2zCZCCzyQ9Dxs6RndIG8RuJNW3ZCG5gZDZD`;
+        
         var options = {
           uri: url,
           json: true
@@ -302,8 +336,32 @@ exports.chatBot = functions.https.onRequest((request, response) => {
             agent.add(`Bonjour ${body.name}, que-voulez vous faire ?`);
             agent.add(new Suggestion(`Random Question`));
             agent.add(new Suggestion(`Talk 4 For`));
+            
+            return admin.database().ref(`userID`).once(`value`).then((snapshot)=>{
+                var valeur;
+                var position;
+                var deja = false;
+                for(var i = 0; i< 1000; i++) {
+                    valeur = snapshot.child(`${i}`).val();
+                    // eslint-disable-next-line promise/always-return
+                    if(valeur === null) {
+                          position = i;
+                          break;
+                    }
+                }
+                for(var j = 0; j < position; j++) {
+                    valeur = snapshot.child(`${j}`).val();
+                    if(valeur === user_id) {
+                        deja = true;
+                        break;
+                    }
+                }
+                if(deja === false)    
+                    admin.database().ref('userID').child(`${position}`).set(user_id);         
+            });
         });
     }
+
     // Default fallback when the chatbot did not understand
     function fallback(agent) {
         agent.add(`Je n'ai pas compris`);
