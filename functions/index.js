@@ -50,6 +50,27 @@ exports.chatBot = functions.https.onRequest((request, response) => {
         return id;
     }
 
+    //Quick Reply
+    const quickReplies = new Suggestion({
+        title: "Choisissez une réponse",
+        reply: "Suivant"
+    })
+    quickReplies.addReply_("Annuler");
+
+    //Quick Reply 2
+    const quickReplies2 = new Suggestion({
+        title: "Choisissez une réponse",
+        reply: "Random Question"
+    })
+    quickReplies2.addReply_("Talk for 4");
+
+    //Quick Reply 3
+    const quickReplies3 = new Suggestion({
+        title: "Choisissez une réponse",
+        reply: "Quick Reply"
+    })
+    quickReplies3.addReply_("Suggestion");
+
     // Generate Random questions 
     function askRandom(agent)
     {   
@@ -61,73 +82,40 @@ exports.chatBot = functions.https.onRequest((request, response) => {
                 if(snapshot.child(`AskRandomQ/${user_id}/${i}`).val() === "True")
                     sumQ++; 
             }
-                // admin.database().ref('data/AskRandomQ').child(`${user_id}/${ID}`).set('False');
-            agent.add(`${sumQ}`);
             
-
             if(sumQ === 6)
                 for(var j = 0; j < 7; j++) {
                     admin.database().ref('data/AskRandomQ').child(`${user_id}/${j}`).set('False');
                 }
                 
-
             var checkQ = snapshot.child(`AskRandomQ/${user_id}/${ID}`).val();
             while(checkQ === "True"){
                 ID = randomInt(0,7);
                 checkQ = snapshot.child(`AskRandomQ/${user_id}/${ID}`).val();
-                // sumQ++;
-                // if(sumQ === 7)
-                //     for(var i = 0; i < 7; i++)
-                //         admin.database().ref('data/AskRandomQ').child(`${user_id}/${ID}`).set('False');
+                admin.database().ref('data/AskRandomQ').child(`${user_id}/${ID}`).set('False');
             }
+
+            admin.database().ref('data/CurrentQuestion').child(`${user_id}`).set(ID);
             var question = snapshot.child(`questions/${ID}`).val();
             var answer0 = snapshot.child(`answers/${ID}/0`).val();
             var answer1 = snapshot.child(`answers/${ID}/1`).val();
             var answer2 = snapshot.child(`answers/${ID}/2`).val();
             var answer3 = snapshot.child(`answers/${ID}/3`).val();
-            var note = snapshot.child(`notes/${ID}`).val();
-            var correct = snapshot.child(`corrects/${ID}`).val();
             // eslint-disable-next-line promise/always-return
             if(question !== null)
             {
-                // let payload = {
-                //     "messages":{
-                //       "attachment": {
-                //         "type": "quick_replies",
-                //         "payload": {
-                //             elements: [
-                //                 {
-                //                   text: 'Choisissez une bonne réponse',
-                //                   quick_replies: [
-                //                     {
-                //                       title: `${answer0}`
-                //                     },
-                //                     {
-                //                       title: `${answer1}`
-                //                     },
-                //                     {
-                //                       title: `${answer2}`
-                //                     },
-                //                     {
-                //                       title: `${answer3}`
-                //                     }
-                //                   ]
-                //                 }
-                //               ]
-                //            }
-                //       }
-                //     }
-                //   }
-
                 agent.add(`[${ID+1}] - ${question}`);
-                // agent.requestSource = agent.facebook;
-                //agent.add(new Payload('facebook', payload));
-                agent.add(new Suggestion(`${answer0}`));
-                agent.add(new Suggestion(`${answer1}`));
-                agent.add(new Suggestion(`${answer2}`));
-                agent.add(new Suggestion(`${answer3}`));
-                //agent.add(`La bonne réponse est ${correct}`);
-                //agent.add(`${note}`);
+
+                const quickReplies1 = new Suggestion({
+                    title: "Choisissez une réponse",
+                    reply: `${answer0}`
+                })
+                quickReplies1.addReply_(`${answer1}`);
+                quickReplies1.addReply_(`${answer2}`);
+                quickReplies1.addReply_(`${answer3}`);
+    
+                agent.add(quickReplies1);
+
                 admin.database().ref('data/AskRandomQ').child(`${user_id}/${ID}`).set('True');
             }
         });
@@ -138,30 +126,15 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     {
         return ref.once(`value`).then((snapshot)=>{
             var ans = agent.parameters['answer'];
-            var correctAnswer;
-            var correctNumber;
-            var explication;
+            var currentQuestion = snapshot.child(`CurrentQuestion/${user_id}`).val();
+            var correctA = snapshot.child(`corrects/${currentQuestion}`).val();
+            var explication = snapshot.child(`notes/${currentQuestion}`).val();
             var check = false;
-            // eslint-disable-next-line promise/always-return
-            for(var i = 0; i < 7; i++){
-                var CorrectAnswer = snapshot.child(`corrects/${i}`).val();
-                if(ans === CorrectAnswer) {                                                     
-                    check = true;
-                    break;
-                }
-            }
-            // eslint-disable-next-line promise/always-return
-            for(var j = 0; j<7; j++){
-                for(var k=0; k<4; k++){
-                    CorrectAnswer = snapshot.child(`answers/${j}/${k}`).val();
-                    if(ans === CorrectAnswer) {
-                        correctNumber = j;      
-                        break;         
-                    }     
-                }
-            } 
 
-            explication = snapshot.child(`notes/${correctNumber}`).val();
+            if(ans === correctA) {
+                check = true;
+            }
+
             if(ans === 'je ne sais pas'){
                 agent.add(`Essayez d'y répondre, ne vous inquiétez pas de l'échec 🤗`);
             }
@@ -172,17 +145,21 @@ exports.chatBot = functions.https.onRequest((request, response) => {
             //eslint-disable-next-line promise/always-return
             else if(check !== true && explication !== null){ 
                 agent.add(`Ce n'est pas correct :(`);              
-                correctAnswer = snapshot.child(`corrects/${correctNumber}`).val();
-                agent.add(`La bonne réponse est ${correctAnswer}`);
-                // eslint-disable-next-line promise/always-return               
+                agent.add(`La bonne réponse est ${correctA}`);    
                 agent.add(`${explication}`);                                                                                         
             }       
             else {
                 agent.add(`Pardon, il y a une erreur, réessayez!`);
                 
-            }                 
-            agent.add(new Suggestion(`Rejouer`));
-            agent.add(new Suggestion(`Annuler`));    
+            }
+            
+            const quickReplies = new Suggestion({
+                title: "Choisissez une réponse",
+                reply: "Rejouer"
+            })
+            quickReplies.addReply_("Annuler");
+
+            agent.add(quickReplies);
         });       
     }
 
@@ -216,11 +193,15 @@ exports.chatBot = functions.https.onRequest((request, response) => {
  
                         break; 
             }
-            agent.add(new Suggestion(`${a0}`));
-            agent.add(new Suggestion(`${a1}`));
-            agent.add(new Suggestion(`${a2}`));
-            agent.add(new Suggestion(`${a3}`));
+            const quickReplies = new Suggestion({
+                title: "Choisissez une réponse",
+                reply: `${a0}`
+            })
+            quickReplies.addReply_(`${a1}`);
+            quickReplies.addReply_(`${a2}`);
+            quickReplies.addReply_(`${a3}`);
 
+            agent.add(quickReplies);
     });
 }
 
@@ -237,8 +218,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
             else {
                 agent.add(`Je suis désolé, il y a une erreur!`);
             }
-            agent.add(new Suggestion(`Suivant`));
-            agent.add(new Suggestion(`Annuler`));
+            agent.add(quickReplies);
         });
     }
 
@@ -303,15 +283,13 @@ exports.chatBot = functions.https.onRequest((request, response) => {
             default:
                 iso = 'null';
                 agent.add(`Pardon, la langue ${lang} n'est pas encore supporté.`);
-                agent.add(new Suggestion(`Random Question`));
-                agent.add(new Suggestion(`Talk 4 For`));
+                agent.add(quickReplies2);
                 return;
         }
      
         const [translation] = await translate.translate(text, iso);
         agent.add(`${text} en ${lang}: ${translation}`);
-        agent.add(new Suggestion(`Random Question`));
-        agent.add(new Suggestion(`Talk 4 For`));
+        agent.add(quickReplies2);
       }
 
     
@@ -334,8 +312,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
         .then( body => {
             //console.log(body);
             agent.add(`Bonjour ${body.name}, que-voulez vous faire ?`);
-            agent.add(new Suggestion(`Random Question`));
-            agent.add(new Suggestion(`Talk 4 For`));
+            agent.add(quickReplies2);
             
             return admin.database().ref(`userID`).once(`value`).then((snapshot)=>{
                 var valeur;
@@ -384,8 +361,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
             buttonUrl: 'https://assistant.google.com/'
         })
         );
-        agent.add(new Suggestion(`Quick Reply`));
-        agent.add(new Suggestion(`Suggestion`));
+        agent.add(quickReplies3);
         //agent.setContext({ name: 'weather', lifespan: 2, parameters: { city: 'Rome' }});
     }
 
