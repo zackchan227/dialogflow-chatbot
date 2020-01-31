@@ -50,16 +50,17 @@ exports.chatBot = functions.https.onRequest((request, response) => {
         return id;
     }
 
+    
     //Quick Reply
     const quickReplies = new Suggestion({
-        title: "Choisissez une réponse",
+        title: "Que voulez-vous faire après?",
         reply: "Suivant"
     })
     quickReplies.addReply_("Annuler");
 
     //Quick Reply 2
     const quickReplies2 = new Suggestion({
-        title: "Choisissez une réponse",
+        title: "Que-voulez vous faire?",
         reply: "Random Question"
     })
     quickReplies2.addReply_("Talk for 4");
@@ -70,6 +71,13 @@ exports.chatBot = functions.https.onRequest((request, response) => {
         reply: "Quick Reply"
     })
     quickReplies3.addReply_("Suggestion");
+
+    //Quick Reply 4
+    const quickReplies4 = new Suggestion({
+        title: "Que voulez-vous faire après?",
+        reply: "Rejouer"
+    })
+    quickReplies4.addReply_("Annuler");
 
     // Generate Random questions 
     function askRandom(agent)
@@ -145,21 +153,15 @@ exports.chatBot = functions.https.onRequest((request, response) => {
             //eslint-disable-next-line promise/always-return
             else if(check !== true && explication !== null){ 
                 agent.add(`Ce n'est pas correct :(`);              
-                agent.add(`La bonne réponse est ${correctA}`);    
-                agent.add(`${explication}`);                                                                                         
+                agent.add(`La bonne réponse est: "${correctA}"`);    
+                agent.add(`Explication: ${explication}`);                                                                                         
             }       
             else {
                 agent.add(`Pardon, il y a une erreur, réessayez!`);
                 
             }
-            
-            const quickReplies = new Suggestion({
-                title: "Choisissez une réponse",
-                reply: "Rejouer"
-            })
-            quickReplies.addReply_("Annuler");
 
-            agent.add(quickReplies);
+            agent.add(quickReplies4);
         });       
     }
 
@@ -193,15 +195,15 @@ exports.chatBot = functions.https.onRequest((request, response) => {
  
                         break; 
             }
-            const quickReplies = new Suggestion({
+            const quickReplies5 = new Suggestion({
                 title: "Choisissez une réponse",
                 reply: `${a0}`
             })
-            quickReplies.addReply_(`${a1}`);
-            quickReplies.addReply_(`${a2}`);
-            quickReplies.addReply_(`${a3}`);
+            quickReplies5.addReply_(`${a1}`);
+            quickReplies5.addReply_(`${a2}`);
+            quickReplies5.addReply_(`${a3}`);
 
-            agent.add(quickReplies);
+            agent.add(quickReplies5);
     });
 }
 
@@ -311,9 +313,8 @@ exports.chatBot = functions.https.onRequest((request, response) => {
         // eslint-disable-next-line promise/always-return
         .then( body => {
             //console.log(body);
-            agent.add(`Bonjour ${body.name}, que-voulez vous faire ?`);
+            agent.add(`Bonjour ${body.name}!!`);
             agent.add(quickReplies2);
-            
             return admin.database().ref(`userID`).once(`value`).then((snapshot)=>{
                 var valeur;
                 var position;
