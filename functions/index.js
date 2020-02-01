@@ -11,7 +11,7 @@ const admin = require('firebase-admin');
 //const request = require('request-promise');
 //const FB = require('fb');
 const Facebook = require('facebook-node-sdk');
-//const request = require('request-promise');
+const request = require('request');
 const cheerio = require('cheerio');
 const rp = require('request-promise-native');
 //const {google} = require('googleapis');
@@ -86,7 +86,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     quickRepliesTest.addReply_("Horoscope");
 
     const quickReplies2V = new Suggestion({
-        title: "Ấn vào nút bên trải để chơi lô đề, ấn vào nút bên phải để xem chân lý",
+        title: "Ấn vào nút bên trái để chơi lô đề, ấn vào nút bên phải để xem chân lý",
         reply: "Chơi lô đề"
     })
     quickReplies2V.addReply_("Xem chân lý");
@@ -169,7 +169,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
                 check = true;
             }
 
-            if(ans === 'je ne sais pas'){
+            if(ans === 'je ne sais pas' || ans === 'Je ne sais pas'){
                 agent.add(`Essayez d'y répondre, ne vous inquiétez pas de l'échec 🤗`);
             }
             else if(check === true){
@@ -242,31 +242,35 @@ exports.chatBot = functions.https.onRequest((request, response) => {
               lang = results.language;
             }
           });
-
+        switch(lang)
+        {
+            case 'en':
+                agent.add(quickRepliesE)
+                break;
+            case 'fr':
+                agent.add(quickRepliesF);
+                break;
+            case 'vi':
+                agent.add(quickRepliesV);
+                break;
+        }             
         var ran = randomInt(0,4);
         return ref.once(`value`).then((snapshot)=>{
             var idiom = snapshot.child(`idioms/${ran}`).val();
+            
             // eslint-disable-next-line promise/always-return
             if(idiom !== null){
-                agent.add(`${idiom}`);               
+                agent.add(`${idiom}`);  
+                
             }
             else {
                 agent.add(`Je suis désolé, il y a une erreur!`);
+                
             }
+            
             agent.add(quickRepliesF);
-            switch(lang)
-            {
-                  case 'en':
-                      agent.add(quickRepliesE)
-                      break;
-                  case 'fr':
-                      agent.add(quickRepliesF);
-                      break;
-                  case 'vi':
-                      agent.add(quickRepliesV);
-                      break;
-            }
         });
+        
     }
 
     // Translate function from any languages to another (Available in 4 languages)
@@ -282,6 +286,8 @@ exports.chatBot = functions.https.onRequest((request, response) => {
             case 'english':
             case 'tiếng anh':
             case 'tiếng end':
+            case 'tiếng Mỹ':
+            case 'tiếng mỹ':
             case 'endrjsk':
             case 'engrisk':
             case 'Tiếng Anh':
@@ -305,6 +311,8 @@ exports.chatBot = functions.https.onRequest((request, response) => {
                 break;
             case 'Vietnamien':
             case 'Vietnamese':
+            case 'vietnamese':
+            case 'vietnamien':
             case 'Tiếng Việt':
             case 'tiếng việt':
             case 'tiếng vịt':
@@ -382,7 +390,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
                         agent.add(quickReplies2F);
                         break;
                     case 'vi':
-                        agent.add(`Xin chào ${body.name}!!`);
+                        agent.add(`Sin trào ${body.name}!!`);
                         agent.add(quickReplies2V);
                         break;
                 }
@@ -422,6 +430,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     }
     
     // eslint-disable-next-line consistent-return
+    // 
     function horoscopes(agent){
         var sign = agent.parameters['horoscope'];
         var horos = ['Aries', 'Taurus', 'Gemini','Cancer','Leo', 'Virgo', 'Libra', 'Scorpio','Sagittarius', 'Capricorn','Aquarius','Pisces'];
@@ -432,8 +441,15 @@ exports.chatBot = functions.https.onRequest((request, response) => {
                 break;
             }
         }
+
+        if(check !== true){
+            agent.add(`${sign} Horoscope is not available`);
+            agent.add(quickRepliesTest);
+            return;
+        }
+
         if(check === true){
-            const URL = `https://www.horoscope.com/us/horoscopes/yearly/2020-horoscope-${sign}.aspx`;
+            const URL = `https://www.horoscope.com/us/horoscopes/yearly/2020-horoscope-${sign}.aspx`; // Crawl data from URL
             const getPageContent = (uri) => {
                 const options = {
                     uri,
@@ -441,15 +457,16 @@ exports.chatBot = functions.https.onRequest((request, response) => {
                     'User-Agent': 'Request-Promise'
                     },
                     transform: (body) => {
-                    return cheerio.load(body)
+                    return cheerio.load(body) // Parsing the html code
                     }
                 }
             
-                return rp(options)
+                return rp(options) // return Promise
             }
 
             
             // eslint-disable-next-line promise/catch-or-return
+            // eslint-disable-next-line consistent-return
             return getPageContent(`${URL}`).then($ => {
                 //console.log($('div.view-content > ul').text())
                 var text = $('section.tab-content > p').text();
@@ -458,11 +475,27 @@ exports.chatBot = functions.https.onRequest((request, response) => {
                 agent.add(quickRepliesTest);
             })
         }
-        else {
-            agent.add(`${sign} Horoscope is not available`);
-            agent.add(quickRepliesTest);
-        }
+    }
+
+    function defineWord(agent){
+        var word = agent.parameters['word'];
+        var ran = Math.floor((10) * Math.random());
+        var options = {
+            method: 'GET',
+            url: 'https://mashape-community-urban-dictionary.p.rapidapi.com/define',
+            qs: {term: `${word}`},
+            headers: {
+            'x-rapidapi-host': 'mashape-community-urban-dictionary.p.rapidapi.com',
+            'x-rapidapi-key': '150ec41dbcmsh0524350c3406a72p1fc807jsnbd8c05b29ec9'
+            }
+        };
         
+        // eslint-disable-next-line prefer-arrow-callback
+        return rp(options, function (error, response, body) {
+            const def = JSON.parse(body);
+            //console.log(def.list[ran].definition);
+            agent.add(`${def.list[ran].definition}`);
+        });
     }
 
     // // Uncomment and edit to make your own intent handler
@@ -505,6 +538,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     intentMap.set('Idioms', talk4For);
     intentMap.set('Translate', translateText);
     intentMap.set('Horoscopes', horoscopes);
+    intentMap.set('Definition', defineWord);
     agent.handleRequest(intentMap);
 });
 
