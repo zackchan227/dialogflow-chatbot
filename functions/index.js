@@ -11,7 +11,8 @@ const admin = require('firebase-admin');
 //const request = require('request-promise');
 //const FB = require('fb');
 const Facebook = require('facebook-node-sdk');
-const request = require('request');
+//const request = require('request-promise');
+const cheerio = require('cheerio');
 const rp = require('request-promise-native');
 //const {google} = require('googleapis');
 const projectId = 'mr-fap-naainy';
@@ -22,7 +23,7 @@ const translate = new Translate({projectId});
 
 
 const {WebhookClient} = require('dialogflow-fulfillment');
-const {Card, Suggestion, Payload} = require('dialogflow-fulfillment');
+const {Card, Suggestion} = require('dialogflow-fulfillment');
 const serviceAccount = require("./mr-fap-naainy-firebase-adminsdk-d55vb-67d7b85f0b.json");
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
@@ -44,33 +45,58 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     }
     
     var ID = randomInt(0,7); // Global random seed for question's ID
-
-    function saveID(id)
-    {
-        return id;
-    }
-
     
     //Quick Reply
-    const quickReplies = new Suggestion({
+    const quickRepliesF = new Suggestion({
         title: "Que voulez-vous faire après?",
         reply: "Suivant"
     })
-    quickReplies.addReply_("Annuler");
+    quickRepliesF.addReply_("Annuler");
+
+    const quickRepliesE = new Suggestion({
+        title: "What do you want to do next?",
+        reply: "Next"
+    })
+    quickRepliesE.addReply_("Cancel");
+
+    const quickRepliesV = new Suggestion({
+        title: "Muốn xem tiếp chứ?",
+        reply: "Triển luôn bạn ei"
+    })
+    quickRepliesV.addReply_("Đéo");
 
     //Quick Reply 2
-    const quickReplies2 = new Suggestion({
+    const quickReplies2F = new Suggestion({
         title: "Que-voulez vous faire?",
+        reply: "Questions Aléatoires"
+    })
+    quickReplies2F.addReply_("Expressions Idiomatiques");
+
+    const quickReplies2E = new Suggestion({
+        title: "There are random question and talk for 4, what's your choice?",
         reply: "Random Question"
     })
-    quickReplies2.addReply_("Talk for 4");
+    quickReplies2E.addReply_("Talk for 4");
+
+    const quickRepliesTest = new Suggestion({
+        title: "There are 3 options, what's your choice?",
+        reply: "Random Question"
+    })
+    quickRepliesTest.addReply_("Talk for 4");
+    quickRepliesTest.addReply_("Horoscope");
+
+    const quickReplies2V = new Suggestion({
+        title: "Ấn vào nút bên trải để chơi lô đề, ấn vào nút bên phải để xem chân lý",
+        reply: "Chơi lô đề"
+    })
+    quickReplies2V.addReply_("Xem chân lý");
 
     //Quick Reply 3
-    const quickReplies3 = new Suggestion({
+    const quickReplies3F = new Suggestion({
         title: "Choisissez une réponse",
         reply: "Quick Reply"
     })
-    quickReplies3.addReply_("Suggestion");
+    quickReplies3F.addReply_("Suggestion");
 
     //Quick Reply 4
     const quickReplies4 = new Suggestion({
@@ -170,7 +196,6 @@ exports.chatBot = functions.https.onRequest((request, response) => {
         
         return ref.once(`value`).then((snapshot)=>{
             var ran = randomInt(0,4);
-            var id = saveID(ID);
             var a0 = snapshot.child(`answers/${id}/0`).val();
             var a1 = snapshot.child(`answers/${id}/1`).val();
             var a2 = snapshot.child(`answers/${id}/2`).val();
@@ -210,6 +235,14 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     // Function is made for 4
     function talk4For(agent)
     {
+        var input = agent.parameters['language'];
+        var lang;
+        translate.detect(input, (err, results) => {
+            if (!err) {
+              lang = results.language;
+            }
+          });
+
         var ran = randomInt(0,4);
         return ref.once(`value`).then((snapshot)=>{
             var idiom = snapshot.child(`idioms/${ran}`).val();
@@ -220,7 +253,19 @@ exports.chatBot = functions.https.onRequest((request, response) => {
             else {
                 agent.add(`Je suis désolé, il y a une erreur!`);
             }
-            agent.add(quickReplies);
+            agent.add(quickRepliesF);
+            switch(lang)
+            {
+                  case 'en':
+                      agent.add(quickRepliesE)
+                      break;
+                  case 'fr':
+                      agent.add(quickRepliesF);
+                      break;
+                  case 'vi':
+                      agent.add(quickRepliesV);
+                      break;
+            }
         });
     }
 
@@ -234,6 +279,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
         {
             case 'Anglais':
             case 'English':
+            case 'english':
             case 'tiếng anh':
             case 'tiếng end':
             case 'endrjsk':
@@ -285,13 +331,13 @@ exports.chatBot = functions.https.onRequest((request, response) => {
             default:
                 iso = 'null';
                 agent.add(`Pardon, la langue ${lang} n'est pas encore supporté.`);
-                agent.add(quickReplies2);
+                agent.add(quickReplies2F);
                 return;
         }
      
         const [translation] = await translate.translate(text, iso);
         agent.add(`${text} en ${lang}: ${translation}`);
-        agent.add(quickReplies2);
+        agent.add(quickReplies2F);
       }
 
     
@@ -301,6 +347,8 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     // Default welcome when start to the conversation
     function welcome(agent) {
 
+        var greeting = agent.parameters['yo'];
+        var lang;
         // Appel au graphique Facebook pour obtenir les informations des utilisateurs
         var url = `https://graph.facebook.com/${user_id}?fields=name&access_token=EAADLSmoiLyMBALPNcqIorb0fCE6IpOb6xoxJawelRLZCmZCeuVnAg859nXhimFZCSAK21OT2PclZBT4t7paZANzWH4RDqVsySmASyFrZABmlJOZCYAZBZBaCwVvrxXwmf5PI7GZAvkDGjxOZC0rN2zCZCCzyQ9Dxs6RndIG8RuJNW3ZCG5gZDZD`;
         
@@ -309,12 +357,37 @@ exports.chatBot = functions.https.onRequest((request, response) => {
           json: true
         };
 
+        translate.detect(greeting, (err, results) => {
+            if (!err) {
+              lang = results.language;
+            }
+          });
+
         return rp.get( options )
         // eslint-disable-next-line promise/always-return
         .then( body => {
-            //console.log(body);
-            agent.add(`Bonjour ${body.name}!!`);
-            agent.add(quickReplies2);
+            if(greeting === 'yo' || greeting === 'Yo'){
+                agent.add(`Yo, what's up ${body.name}!! Long time no see, how are you bro?`);
+                agent.add(quickRepliesTest);
+            }
+            else{
+                switch(lang)
+                {
+                    case 'en':
+                        agent.add(`Hello ${body.name}!!`);
+                        agent.add(quickReplies2E);
+                        break;
+                    case 'fr':
+                        agent.add(`Bonjour ${body.name}!!`);
+                        agent.add(quickReplies2F);
+                        break;
+                    case 'vi':
+                        agent.add(`Xin chào ${body.name}!!`);
+                        agent.add(quickReplies2V);
+                        break;
+                }
+            }
+            // eslint-disable-next-line promise/no-nesting
             return admin.database().ref(`userID`).once(`value`).then((snapshot)=>{
                 var valeur;
                 var position;
@@ -348,6 +421,50 @@ exports.chatBot = functions.https.onRequest((request, response) => {
         // agent.add(`I'm sorry, can you try again?`);
     }
     
+    // eslint-disable-next-line consistent-return
+    function horoscopes(agent){
+        var sign = agent.parameters['horoscope'];
+        var horos = ['Aries', 'Taurus', 'Gemini','Cancer','Leo', 'Virgo', 'Libra', 'Scorpio','Sagittarius', 'Capricorn','Aquarius','Pisces'];
+        var check = false;
+        for(var i = 0; i < 12; i++){
+            if(sign === horos[i]){
+                check = true;
+                break;
+            }
+        }
+        if(check === true){
+            const URL = `https://www.horoscope.com/us/horoscopes/yearly/2020-horoscope-${sign}.aspx`;
+            const getPageContent = (uri) => {
+                const options = {
+                    uri,
+                    headers: {
+                    'User-Agent': 'Request-Promise'
+                    },
+                    transform: (body) => {
+                    return cheerio.load(body)
+                    }
+                }
+            
+                return rp(options)
+            }
+
+            
+            // eslint-disable-next-line promise/catch-or-return
+            return getPageContent(`${URL}`).then($ => {
+                //console.log($('div.view-content > ul').text())
+                var text = $('section.tab-content > p').text();
+                agent.add(`${sign} Horoscope: `);
+                agent.add(text);
+                agent.add(quickRepliesTest);
+            })
+        }
+        else {
+            agent.add(`${sign} Horoscope is not available`);
+            agent.add(quickRepliesTest);
+        }
+        
+    }
+
     // // Uncomment and edit to make your own intent handler
     // // uncomment `intentMap.set('your intent name here', yourFunctionHandler);`
     // // below to get this function to be run when a Dialogflow intent is matched
@@ -387,6 +504,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     intentMap.set('AnswersFallback', checkFallback);
     intentMap.set('Idioms', talk4For);
     intentMap.set('Translate', translateText);
+    intentMap.set('Horoscopes', horoscopes);
     agent.handleRequest(intentMap);
 });
 
