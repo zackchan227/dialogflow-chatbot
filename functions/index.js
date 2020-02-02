@@ -14,6 +14,7 @@ const Facebook = require('facebook-node-sdk');
 const request = require('request');
 const cheerio = require('cheerio');
 const rp = require('request-promise-native');
+var align = require('align-text');
 //const {google} = require('googleapis');
 const projectId = 'mr-fap-naainy';
 const {Translate} = require('@google-cloud/translate').v2;
@@ -72,6 +73,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     quickReplies2F.addReply_("Expressions Idiomatiques");
     quickReplies2F.addReply_("Traduction");
     quickReplies2F.addReply_("Définition");
+    quickReplies2F.addReply_("Horoscopes");
 
     const quickReplies2E = new Suggestion({
         title: "There are random question and talk for 4, what's your choice?",
@@ -113,6 +115,21 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     })
     quickReplies4A.addReply_("Annuler");
 
+    const quickRepliesHoroscopes = new Suggestion({
+        title: "Choisissez votre signe",
+        reply: "Bélier"
+    })
+    quickRepliesHoroscopes.addReply_("Taureau");
+    quickRepliesHoroscopes.addReply_("Gémeaux");
+    quickRepliesHoroscopes.addReply_("Cancer");
+    quickRepliesHoroscopes.addReply_("Lion");
+    quickRepliesHoroscopes.addReply_("Viergie");
+    quickRepliesHoroscopes.addReply_("Balance");
+    quickRepliesHoroscopes.addReply_("Scorpion");
+    quickRepliesHoroscopes.addReply_("Sagittaire");
+    quickRepliesHoroscopes.addReply_("Capricorne");
+    quickRepliesHoroscopes.addReply_("Verseau");
+    quickRepliesHoroscopes.addReply_("Poissons");
     // Generate Random questions 
     function askRandom(agent)
     {   
@@ -472,27 +489,32 @@ exports.chatBot = functions.https.onRequest((request, response) => {
         // agent.add(`I'm sorry, can you try again?`);
     }
     
+    function contentHoroscopes(agent){
+        agent.add(quickRepliesHoroscopes);
+    }
     // eslint-disable-next-line consistent-return
     // 
     function horoscopes(agent){
         var sign = agent.parameters['horoscope'];
-        var horos = ['Aries', 'Taurus', 'Gemini','Cancer','Leo', 'Virgo', 'Libra', 'Scorpio','Sagittarius', 'Capricorn','Aquarius','Pisces'];
+        var horos = ['Bélier', 'Taureau', 'Gémeaux','Cancer','Lion', 'Viegre', 'Balance', 'Scorpion','Sagittaire', 'Capricorne','Verseau','Poissons'];
         var check = false;
+        var index;
         for(var i = 0; i < 12; i++){
             if(sign === horos[i]){
                 check = true;
+                index = i+1;
                 break;
             }
         }
 
         if(check !== true){
-            agent.add(`${sign} Horoscope is not available`);
+            agent.add(`Horoscope ${sign} n'est pas disponible`);
             agent.add(quickRepliesTest);
             return;
         }
 
         if(check === true){
-            const URL = `https://www.horoscope.com/us/horoscopes/yearly/2020-horoscope-${sign}.aspx`; // Crawl data from URL
+            const URL = `https://www.horoscope.com/fr/horoscopes/general/horoscope-general-du-jour-aujourdhui.aspx?signe=${index}`; // Crawl data from URL
             const getPageContent = (uri) => {
                 const options = {
                     uri,
@@ -512,33 +534,66 @@ exports.chatBot = functions.https.onRequest((request, response) => {
             // eslint-disable-next-line consistent-return
             return getPageContent(`${URL}`).then($ => {
                 //console.log($('div.view-content > ul').text())
-                var text = $('section.tab-content > p').text();
-                agent.add(`${sign} Horoscope: `);
+                var text = $('div.horoscope-content > p').text();
+                agent.add(`Horoscopes ${sign}: `);
                 agent.add(text);
-                agent.add(quickRepliesTest);
+                agent.add(quickReplies2F);
             })
         }
     }
 
     function defineWord(agent){
         var word = agent.parameters['word'];
-        var ran = Math.floor((10) * Math.random());
-        var options = {
-            method: 'GET',
-            url: 'https://mashape-community-urban-dictionary.p.rapidapi.com/define',
-            qs: {term: `${word}`},
-            headers: {
-            'x-rapidapi-host': 'mashape-community-urban-dictionary.p.rapidapi.com',
-            'x-rapidapi-key': '150ec41dbcmsh0524350c3406a72p1fc807jsnbd8c05b29ec9'
-            }
-        };
+        //var ran = Math.floor((10) * Math.random());
+        // var options = {
+        //     method: 'GET',
+        //     url: 'https://mashape-community-urban-dictionary.p.rapidapi.com/define',
+        //     qs: {term: `${word}`},
+        //     headers: {
+        //     'x-rapidapi-host': 'mashape-community-urban-dictionary.p.rapidapi.com',
+        //     'x-rapidapi-key': '150ec41dbcmsh0524350c3406a72p1fc807jsnbd8c05b29ec9'
+        //     }
+        // };
         
-        // eslint-disable-next-line prefer-arrow-callback
-        return rp(options, function (error, response, body) {
-            const def = JSON.parse(body);
-            //console.log(def.list[ran].definition);
-            agent.add(`${def.list[ran].definition}`);
-        });
+        // // eslint-disable-next-line prefer-arrow-callback
+        // return rp(options, function (error, response, body) {
+        //     const def = JSON.parse(body);
+        //     //console.log(def.list[ran].definition);
+        //     agent.add(`${def.list[ran].definition}`);
+        // });
+        const URL = `https://www.le-dictionnaire.com/definition/${word}`; // Crawl data from URL
+        const getPageContent = (uri) => {
+            const options = {
+                uri,
+                headers: {
+                'User-Agent': 'Request-Promise'
+                },
+                transform: (body) => {
+                return cheerio.load(body) // Parsing the html code
+                }
+             }
+            
+            return rp(options) // return Promise
+        }
+
+            
+        // eslint-disable-next-line promise/catch-or-return
+        // eslint-disable-next-line consistent-return
+        return getPageContent(`${URL}`).then($ => {
+            //console.log($('div.view-content > ul').text())
+            var text = $('div.defbox > ul').text();
+            var mot = $('div.defbox > span').text();
+            agent.add(`Définition ${word}: `);
+            // eslint-disable-next-line prefer-arrow-callback
+            agent.add(align(text, function (len, max, line, lines) {
+                return {
+                    indent: Math.floor((max - len) / 2), 
+                    character: '-', 
+                    prefix: ' 👍 '
+                };
+            }));
+            agent.add(quickReplies2F);
+        })
     }
 
     function regarderNiveau(agent){
@@ -585,7 +640,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
             buttonUrl: 'https://assistant.google.com/'
         })
         );
-        agent.add(quickReplies3);
+        agent.add(quickReplies3F);
         //agent.setContext({ name: 'weather', lifespan: 2, parameters: { city: 'Rome' }});
     }
 
@@ -604,13 +659,14 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     let intentMap = new Map();
     intentMap.set('Default Welcome Intent', welcome);
     // intentMap.set('Default Fallback Intent', fallback);
-    intentMap.set('Test', test);   
+    intentMap.set('Test', test);
     intentMap.set('Random', askRandom);
     intentMap.set('Answers', checkAnswer);
     intentMap.set('AnswersFallback', checkFallback);
     intentMap.set('Idioms', talk4For);
     intentMap.set('Translate', translateText);
-    intentMap.set('Horoscopes', horoscopes);
+    intentMap.set('Horoscopes', contentHoroscopes);
+    intentMap.set('Horoscopes - custom', horoscopes);
     intentMap.set('Definition', defineWord);
     intentMap.set('Resultat', regarderNiveau);
     agent.handleRequest(intentMap);
