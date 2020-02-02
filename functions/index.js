@@ -70,6 +70,8 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     })
     quickReplies2F.addReply_("Mon niveau");
     quickReplies2F.addReply_("Expressions Idiomatiques");
+    quickReplies2F.addReply_("Traduction");
+    quickReplies2F.addReply_("Définition");
 
     const quickReplies2E = new Suggestion({
         title: "There are random question and talk for 4, what's your choice?",
