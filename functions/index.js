@@ -44,8 +44,6 @@ exports.chatBot = functions.https.onRequest((request, response) => {
         return min + Math.floor((max - min) * Math.random());
     }
     
-    var ID = randomInt(0,7); // Global random seed for question's ID
-    
     //Quick Reply
     const quickRepliesF = new Suggestion({
         title: "Que voulez-vous faire après?",
@@ -70,6 +68,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
         title: "Que-voulez vous faire?",
         reply: "Questions Aléatoires"
     })
+    quickReplies2F.addReply_("Mon niveau");
     quickReplies2F.addReply_("Expressions Idiomatiques");
 
     const quickReplies2E = new Suggestion({
@@ -105,26 +104,59 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     })
     quickReplies4.addReply_("Annuler");
 
+    //Quick Reply 4A
+    const quickReplies4A = new Suggestion({
+        title: "Voulez-vous améliorer votre niveau?",
+        reply: "Questions Aléatoires"
+    })
+    quickReplies4A.addReply_("Annuler");
+
     // Generate Random questions 
     function askRandom(agent)
     {   
         return ref.once(`value`).then((snapshot)=>{
-
+            var ID;// Global random seed for question's ID
+            var score = snapshot.child(`scores/${user_id}`).val();
+            var i,j;
+            if(score < 500)
+                ID = randomInt(0,4);
+            else if(score >= 500 && score < 1000)
+                ID = randomInt(4,7);
 
             var sumQ = 0;
-            for(var i = 0; i < 7; i++) {
-                if(snapshot.child(`AskRandomQ/${user_id}/${i}`).val() === "True")
-                    sumQ++; 
+            if(score < 500) {
+                for(i = 0; i < 4; i++) {
+                    if(snapshot.child(`AskRandomQ/${user_id}/${i}`).val() === "True")
+                        sumQ++; 
+                }
+            }
+            else if(score >= 500 && score < 1000) {
+                for(i = 4; i < 7; i++) {
+                    if(snapshot.child(`AskRandomQ/${user_id}/${i}`).val() === "True")
+                        sumQ++; 
+                }
             }
             
-            if(sumQ === 6)
-                for(var j = 0; j < 7; j++) {
-                    admin.database().ref('data/AskRandomQ').child(`${user_id}/${j}`).set('False');
-                }
+            if(score < 500) {
+                if(sumQ === 3)
+                    for(j = 0; j < 4; j++) {
+                        admin.database().ref('data/AskRandomQ').child(`${user_id}/${j}`).set('False');
+                    }
+            }
+            else if(score >= 500 && score < 1000) {
+                if(sumQ === 2)
+                    for(j = 4; j < 7; j++) {
+                        admin.database().ref('data/AskRandomQ').child(`${user_id}/${j}`).set('False');
+                    }
+            }
+
                 
             var checkQ = snapshot.child(`AskRandomQ/${user_id}/${ID}`).val();
             while(checkQ === "True"){
-                ID = randomInt(0,7);
+                if(score < 500)
+                    ID = randomInt(0,4);
+                else if(score >= 500 && score < 1000)
+                    ID = randomInt(4,7);
                 checkQ = snapshot.child(`AskRandomQ/${user_id}/${ID}`).val();
                 admin.database().ref('data/AskRandomQ').child(`${user_id}/${ID}`).set('False');
             }
@@ -163,6 +195,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
             var currentQuestion = snapshot.child(`CurrentQuestion/${user_id}`).val();
             var correctA = snapshot.child(`corrects/${currentQuestion}`).val();
             var explication = snapshot.child(`notes/${currentQuestion}`).val();
+            var valeur;
             var check = false;
 
             if(ans === correctA) {
@@ -175,12 +208,18 @@ exports.chatBot = functions.https.onRequest((request, response) => {
             else if(check === true){
                 agent.add(`C'est Correct :D`);    
                 agent.add(`${explication}`);
+                valeur = snapshot.child(`scores/${user_id}`).val();
+                valeur += 25;
+                admin.database().ref('data/scores').child(`${user_id}`).set(valeur);
             }
             //eslint-disable-next-line promise/always-return
             else if(check !== true && explication !== null){ 
                 agent.add(`Ce n'est pas correct :(`);              
                 agent.add(`La bonne réponse est: "${correctA}"`);    
-                agent.add(`Explication: ${explication}`);                                                                                         
+                agent.add(`Explication: ${explication}`);
+                valeur = snapshot.child(`scores/${user_id}`).val();
+                valeur -= 25;
+                admin.database().ref('data/scores').child(`${user_id}`).set(valeur);                                                                                        
             }       
             else {
                 agent.add(`Pardon, il y a une erreur, réessayez!`);
@@ -229,8 +268,8 @@ exports.chatBot = functions.https.onRequest((request, response) => {
             quickReplies5.addReply_(`${a3}`);
 
             agent.add(quickReplies5);
-    });
-}
+        });
+    }
 
     // Function is made for 4
     function talk4For(agent)
@@ -396,7 +435,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
                 }
             }
             // eslint-disable-next-line promise/no-nesting
-            return admin.database().ref(`userID`).once(`value`).then((snapshot)=>{
+            return admin.database().ref(`data/userID`).once(`value`).then((snapshot)=>{
                 var valeur;
                 var position;
                 var deja = false;
@@ -415,8 +454,10 @@ exports.chatBot = functions.https.onRequest((request, response) => {
                         break;
                     }
                 }
-                if(deja === false)    
-                    admin.database().ref('userID').child(`${position}`).set(user_id);         
+                if(deja === false) {
+                    admin.database().ref('data/userID').child(`${position}`).set(user_id);
+                    admin.database().ref('data/scores').child(`${user_id}`).set(1000);
+                }
             });
         });
     }
@@ -498,6 +539,36 @@ exports.chatBot = functions.https.onRequest((request, response) => {
         });
     }
 
+    function regarderNiveau(agent){
+        var valeur;
+        var niveau;
+        return ref.once(`value`).then((snapshot)=>{
+            valeur = snapshot.child(`scores/${user_id}`).val(); 
+            
+            if(valeur < 500)
+                niveau = "A1";
+
+            if(valeur >= 500 && valeur < 1000)
+                niveau = "A2";
+
+            if(valeur >=1000 && valeur < 1500)
+                niveau = "B1";
+
+            if(valeur >=1500 && valeur < 2000)
+                niveau = "B2";
+
+            if(valeur >=2000 && valeur < 2500)
+                niveau = "C1";
+
+            if(valeur >=2500 && valeur <= 3000)
+                niveau = "C2";
+            
+            agent.add(`Votre niveau est: ${niveau}`);
+            agent.add(`Votre score est: ${valeur}`);
+            agent.add(quickReplies4A);
+        });
+    }
+
     // // Uncomment and edit to make your own intent handler
     // // uncomment `intentMap.set('your intent name here', yourFunctionHandler);`
     // // below to get this function to be run when a Dialogflow intent is matched
@@ -539,6 +610,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     intentMap.set('Translate', translateText);
     intentMap.set('Horoscopes', horoscopes);
     intentMap.set('Definition', defineWord);
+    intentMap.set('Resultat', regarderNiveau);
     agent.handleRequest(intentMap);
 });
 
