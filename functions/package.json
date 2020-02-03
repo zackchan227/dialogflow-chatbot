@@ -21,6 +21,7 @@
     "cheerio": "^1.0.0-rc.3",
     "dialogflow": "^0.6.0",
     "dialogflow-fulfillment": "git+https://github.com/naranjja/dialogflow-fulfillment-nodejs.git",
+    "esrever": "^0.2.0",
     "facebook-node-sdk": "^0.2.0",
     "fb": "^2.0.0",
     "firebase-admin": "^5.13.1",
