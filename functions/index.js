@@ -699,7 +699,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
                 var text1 = '';
                 for(var i = 0; i < 999; i++){
                     
-                    if(i > 400 && text[i] === '\n'){
+                    if(i > 200 && text[i] === '\n'){
                         break;
                     }
                     text1 += text[i];

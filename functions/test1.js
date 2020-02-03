@@ -1,6 +1,6 @@
 var rp = require('request-promise-native');
 var cheerio = require('cheerio');
-var index = 1;
+var index = 12;
 /* eslint-disable promise/always-return */
 /* eslint-disable promise/catch-or-return */
 const URL = `https://www.horoscope.com/fr/horoscopes/general/horoscope-general-du-jour-aujourdhui.aspx?signe=${index}`; // Crawl data from URL
@@ -29,9 +29,9 @@ const URL = `https://www.horoscope.com/fr/horoscopes/general/horoscope-general-d
                 // agent.add(quickRepliesTest);
                 //console.log(text);
                 var text1 = '';
-                for(var i = 0; i < 500; i++){
+                for(var i = 0; i < 999; i++){
                     
-                    if(i > 400 && text[i] === '\n'){
+                    if(i > 200 && text[i] === '\n'){
                         break;
                     }
                     text1 += text[i];
