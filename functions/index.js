@@ -1,3 +1,5 @@
+/* eslint-disable promise/catch-or-return */
+/* eslint-disable prefer-arrow-callback */
 /* eslint-disable promise/always-return */
 // See https://github.com/dialogflow/dialogflow-fulfillment-nodejs
 // for Dialogflow fulfillment library docs, samples, and to report issues
@@ -471,42 +473,16 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     // Function is made for 4
     function talk4For(agent)
     {
-        var input = agent.parameters['language'];
-        var lang;
-        translate.detect(input, (err, results) => {
-            if (!err) {
-              lang = results.language;
-            }
-          });
-        switch(lang)
-        {
-            case 'en':
-                agent.add(quickRepliesE)
-                break;
-            case 'fr':
-                agent.add(quickRepliesF);
-                break;
-            case 'vi':
-                agent.add(quickRepliesV);
-                break;
-        }             
-        var ran = randomInt(0,4);
-        return ref.once(`value`).then((snapshot)=>{
-            var idiom = snapshot.child(`idioms/${ran}`).val();
-            
-            // eslint-disable-next-line promise/always-return
+        return ref.child("idioms").once("value", function(snapshot) {
+            var max = snapshot.numChildren();
+            var ran = randomInt(0,max);
+            var idiom =  snapshot.child(`${ran}`).val();
             if(idiom !== null){
-                agent.add(`${idiom}`);  
-                
+                agent.add(`[${ran+1}] `+ idiom);
             }
-            else {
-                agent.add(`Je suis désolé, il y a une erreur!`);
-                
-            }
-            
+            else agent.add('Il y a une erreur, réessayez svp');
             agent.add(quickRepliesF);
-        });
-        
+          })
     }
 
     // Translate function from any languages to another (Available in 4 languages)
