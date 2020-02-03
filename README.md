@@ -1,7 +1,8 @@
 # dialogflow-chatbot
-quiz french chatbot with dialogflow using nodejs and firebase
+## Quiz french chatbot with dialogflow using nodejs and firebase
 
-How to Clone a GitHub Repository using VS Code
+&nbsp;
+### How to Clone a GitHub Repository using VS Code
 
 Step 1 : Open Visual Studio Code
 
@@ -16,7 +17,8 @@ Step 5 : Select the path folder that you want to clone.
 Step 6 : Finish Cloning. Ta da !
 
 
-How to run "Dialogflow-chatbot"
+&nbsp;
+### How to run "Dialogflow-chatbot"
 
 Step 1: Open terminal
 
@@ -28,7 +30,8 @@ Step 4: After modify the project, deploy to firebase by "firebase deploy" or "fi
 
 Step 5: "Dialogflow-chatbot" is ready to serve
 
-Common error:
+&nbsp;
+### Common error:
 1. Receive error: "....npm ERR! enoent undefined ls-remote -h -t https://github.com/naranjja/dialogflow-fulfillment-nodejs.git..." when install npm
 **Solution: Modify package.json 
     Step 1: change "dialogflow-fulfillment": "git+https://github.com/naranjja dialogflow-fulfillment-nodejs.git" to              "dialogflow-fulfillment": "^0.5.0"
