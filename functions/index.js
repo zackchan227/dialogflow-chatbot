@@ -132,6 +132,22 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     quickRepliesHoroscopes.addReply_("Verseau");
     quickRepliesHoroscopes.addReply_("Poissons");
 
+    const quickRepliesHoroscopesChinois = new Suggestion({
+        title: "Choisissez votre signe ou donne moi votre année de naissance",
+        reply: "🐭"
+    })
+    quickRepliesHoroscopesChinois.addReply_("🐮");
+    quickRepliesHoroscopesChinois.addReply_("🐯");
+    quickRepliesHoroscopesChinois.addReply_("🐰");
+    quickRepliesHoroscopesChinois.addReply_("🐉");
+    quickRepliesHoroscopesChinois.addReply_("🐍");
+    quickRepliesHoroscopesChinois.addReply_("🐴");
+    quickRepliesHoroscopesChinois.addReply_("🐐");
+    quickRepliesHoroscopesChinois.addReply_("🐵");
+    quickRepliesHoroscopesChinois.addReply_("🐤");
+    quickRepliesHoroscopesChinois.addReply_("🐶");
+    quickRepliesHoroscopesChinois.addReply_("🐷");
+
     function TCFStation(agent) {
         return ref.once(`value`).then((snapshot)=>{
             var score = snapshot.child(`scores/${user_id}`).val();
@@ -697,7 +713,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
                 //console.log($('div.view-content > ul').text())
                 var text = $('div.horoscope-content > p').text();
                 var text1 = '';
-                for(var i = 0; i < 999; i++){
+                for(var i = 0; i < 1696; i++){
                     
                     if(i > 200 && text[i] === '\n'){
                         break;
@@ -726,61 +742,112 @@ exports.chatBot = functions.https.onRequest((request, response) => {
             for(var i = 0; i < 12; i++){
                 if(sign === horos[i]){
                     check = true;
-                    index = i+1;
+                    switch(sign){
+                        case '🐵': 
+                            index = 9;
+                            sign = 'Singe';
+                            break;
+                        case '🐤':
+                            index = 10;
+                            sign = 'Coq';
+                            break;
+                        case '🐶':
+                            index = 11;
+                            sign ='Chien';
+                            break;
+                         case '🐷':
+                            index = 12;
+                            sign ='Cochon';
+                            break;
+                         case '🐭':
+                            index = 3;
+                            sign ='Rat';
+                            break;
+                         case '🐮':
+                            index = 1;
+                            sign ='Boeuf';
+                            break;
+                         case '🐯':
+                            index = 6;
+                            sign ='Tigre';
+                            break;
+                         case '🐰':
+                            index = 7;
+                            sign ='Lièvre';
+                            break;
+                         case '🐉':
+                            index = 5;
+                            sign ='Dragon';
+                            break;
+                         case '🐍':
+                            index = 4;
+                            sign ='Serpent';
+                            break;
+                         case '🐴':
+                            index = 8;
+                            sign ='Cheval';
+                            break;
+                         case '🐐':
+                            index = 2;
+                            sign ='Chèvre';
+                            break;
+                    }
+                    //index = i+1;
                     break;
                 }
             }
         }
         else {
+            check = true;
             var mod = sign % 12;
             switch(mod){
                 case 0: 
-                    index = 12;
-                    sign = '🐷';
+                    index = 9;
+                    sign = 'Singe';
                     break;
                 case 1:
-                    index = 3;
-                    sign = '🐭';
+                    index = 10;
+                    sign = 'Coq';
                     break;
                 case 2:
-                    index = 1;
-                    sign ='🐮';
+                    index = 11;
+                    sign ='Chien';
                     break;
                  case 3:
-                    index = 6;
-                    sign ='🐯';
+                    index = 12;
+                    sign ='Cochon';
                     break;
                  case 4:
-                    index = 7;
-                    sign ='🐰';
+                    index = 3;
+                    sign ='Rat';
                     break;
                  case 5:
-                    index = 5;
-                    sign ='🐉';
+                    index = 1;
+                    sign ='Boeuf';
                     break;
                  case 6:
-                    index = 4;
-                    sign ='🐍';
+                    index = 6;
+                    sign ='Tigre';
                     break;
                  case 7:
-                    index = 8;
-                    sign ='🐴';
+                    index = 7;
+                    sign ='Lièvre';
                     break;
                  case 8:
-                    index = 2;
-                    sign ='🐐';
+                    index = 5;
+                    sign ='Dragon';
                     break;
                  case 9:
-                    index = 9;
-                    sign ='🐵';
+                    index = 4;
+                    sign ='Serpent';
                     break;
                  case 10:
-                    index = 10;
-                    sign ='🐤';
+                    index = 8;
+                    sign ='Cheval';
                     break;
                  case 11:
-                    index = 11;
-                    sign ='🐶';
+                    index = 2;
+                    sign ='Chèvre';
                     break;
             }
         }
@@ -794,7 +861,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
         }
 
         if(check === true){
-            const URL = `https://www.horoscope.com/fr/horoscopes/general/horoscope-general-du-jour-aujourdhui.aspx?signe=${index}`; // Crawl data from URL
+            const URL = `https://www.horoscope.com/fr/horoscopes/chinois/horoscope-chinois-du-jour-aujourdhui.aspx?signe=${index}`; // Crawl data from URL
             const getPageContent = (uri) => {
                 const options = {
                     uri,
@@ -816,7 +883,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
                 //console.log($('div.view-content > ul').text())
                 var text = $('div.horoscope-content > p').text();
                 var text1 = '';
-                for(var i = 0; i < 999; i++){
+                for(var i = 0; i < 1696; i++){
                     
                     if(i > 200 && text[i] === '\n'){
                         break;
