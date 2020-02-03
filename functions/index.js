@@ -711,6 +711,125 @@ exports.chatBot = functions.https.onRequest((request, response) => {
         }
     }
 
+    function contentHoroscopesChinois(agent){
+        agent.add(quickRepliesHoroscopesChinois);
+    }
+    // eslint-disable-next-line consistent-return
+    // 
+    function horoscopesChinois(agent){
+        var sign = agent.parameters['HoroscopesChina'];
+        var horos = ['🐭', '🐮', '🐯','🐰','🐉', '🐍', '🐴', '🐐','🐵', '🐤','🐶','🐷'];
+        var check = false;
+        var index;
+
+        if(isNaN(sign)){
+            for(var i = 0; i < 12; i++){
+                if(sign === horos[i]){
+                    check = true;
+                    index = i+1;
+                    break;
+                }
+            }
+        }
+        else {
+            var mod = sign % 12;
+            switch(mod){
+                case 0: 
+                    index = 12;
+                    sign = '🐷';
+                    break;
+                case 1:
+                    index = 3;
+                    sign = '🐭';
+                    break;
+                case 2:
+                    index = 1;
+                    sign ='🐮';
+                    break;
+                 case 3:
+                    index = 6;
+                    sign ='🐯';
+                    break;
+                 case 4:
+                    index = 7;
+                    sign ='🐰';
+                    break;
+                 case 5:
+                    index = 5;
+                    sign ='🐉';
+                    break;
+                 case 6:
+                    index = 4;
+                    sign ='🐍';
+                    break;
+                 case 7:
+                    index = 8;
+                    sign ='🐴';
+                    break;
+                 case 8:
+                    index = 2;
+                    sign ='🐐';
+                    break;
+                 case 9:
+                    index = 9;
+                    sign ='🐵';
+                    break;
+                 case 10:
+                    index = 10;
+                    sign ='🐤';
+                    break;
+                 case 11:
+                    index = 11;
+                    sign ='🐶';
+                    break;
+            }
+        }
+
+        
+
+        if(check !== true){
+            agent.add(`Horoscope ${sign} n'est pas disponible`);
+            agent.add(quickRepliesTest);
+            return;
+        }
+
+        if(check === true){
+            const URL = `https://www.horoscope.com/fr/horoscopes/general/horoscope-general-du-jour-aujourdhui.aspx?signe=${index}`; // Crawl data from URL
+            const getPageContent = (uri) => {
+                const options = {
+                    uri,
+                    headers: {
+                    'User-Agent': 'Request-Promise'
+                    },
+                    transform: (body) => {
+                    return cheerio.load(body) // Parsing the html code
+                    }
+                }
+            
+                return rp(options) // return Promise
+            }
+
+            
+            // eslint-disable-next-line promise/catch-or-return
+            // eslint-disable-next-line consistent-return
+            return getPageContent(`${URL}`).then($ => {
+                //console.log($('div.view-content > ul').text())
+                var text = $('div.horoscope-content > p').text();
+                var text1 = '';
+                for(var i = 0; i < 999; i++){
+                    
+                    if(i > 200 && text[i] === '\n'){
+                        break;
+                    }
+                    text1 += text[i];
+                }
+                agent.add(`Horoscopes ${sign}: `);
+                agent.add(text1);
+                agent.add(quickReplies2F);
+            })
+        }
+    }
+
     function defineWord(agent){
         var word = agent.parameters['word'];
         //var ran = Math.floor((10) * Math.random());
@@ -858,10 +977,11 @@ exports.chatBot = functions.https.onRequest((request, response) => {
             finalScore = score[0] + score[1] + score[2] + score[3] + score[4];
 
             if(valeur < 0){
+                niveau = "✡️";
                 finalScore = `❗❓❗❓❗`;
             }
 
-            if(valeur < 500)
+            if(valeur >0 && valeur < 500)
                 niveau = "🇦1️⃣";
 
             if(valeur >= 500 && valeur < 1000)
@@ -930,6 +1050,8 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     intentMap.set('Translate', translateText);
     intentMap.set('Horoscopes', contentHoroscopes);
     intentMap.set('Horoscopes - custom', horoscopes);
+    intentMap.set('Horoscopes China', contentHoroscopesChinois);
+    intentMap.set('Horoscopes China - custom', horoscopesChinois);
     intentMap.set('Definition', defineWord);
     intentMap.set('Resultat', regarderNiveau);
     intentMap.set('TCFNotification', TCFStation);
