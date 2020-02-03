@@ -762,22 +762,26 @@ exports.chatBot = functions.https.onRequest((request, response) => {
             valeur = snapshot.child(`scores/${user_id}`).val(); 
             
             if(valeur < 500)
-                niveau = "A1";
+                niveau = "🇦1️⃣";
 
             if(valeur >= 500 && valeur < 1000)
-                niveau = "A2";
+                niveau = "🇦2️⃣";
 
             if(valeur >=1000 && valeur < 1500)
-                niveau = "B1";
+                niveau = "🇧1️⃣";
 
             if(valeur >=1500 && valeur < 2000)
-                niveau = "B2";
+                niveau = "🇧2️⃣";
 
             if(valeur >=2000 && valeur < 2500)
-                niveau = "C1";
+                niveau = "🇨1️⃣";
 
             if(valeur >=2500 && valeur <= 3000)
-                niveau = "C2";
+                niveau = "🇨2️⃣";
+
+            if(valeur >= 6969){
+                niveau = "∞";
+            }
             
             agent.add(`Votre niveau est: ${niveau}`);
             agent.add(`Votre score est: ${valeur}`);

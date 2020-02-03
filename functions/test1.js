@@ -23,7 +23,7 @@ const URL = `https://www.horoscope.com/fr/horoscopes/general/horoscope-general-d
             // eslint-disable-next-line consistent-return
              getPageContent(`${URL}`).then($ => {
                 //console.log($('div.view-content > ul').text())
-                var text = $('div.horoscope-content > p').text();
+                var text = $('body > div.wrap > section.main-horoscope > div > div > div.span-7.span-sm-12.span-xs-12.col > div.horoscope-content > p').text();
                 // agent.add(`Horoscopes ${sign}: `);
                 // agent.add(text);
                 // agent.add(quickRepliesTest);
