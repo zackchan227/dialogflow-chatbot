@@ -67,7 +67,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     //Quick Reply 2
     const quickReplies2F = new Suggestion({
         title: "Que-voulez vous faire?",
-        reply: "Questions Aléatoires"
+        reply: "TCF Question"
     })
     quickReplies2F.addReply_("Mon niveau");
     quickReplies2F.addReply_("Expressions Idiomatiques");
@@ -130,79 +130,173 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     quickRepliesHoroscopes.addReply_("Capricorne");
     quickRepliesHoroscopes.addReply_("Verseau");
     quickRepliesHoroscopes.addReply_("Poissons");
+
+    function TCFStation(agent) {
+        return ref.once(`value`).then((snapshot)=>{
+            var score = snapshot.child(`scores/${user_id}`).val();
+            var niveau;
+            var levelTest = snapshot.child(`levelTest/${user_id}`).val();
+            var fini = 0;
+            var checkQ;
+            if(score === null || levelTest === 0) {
+                if(score === null)
+                    admin.database().ref('data/scores').child(`${user_id}`).set(0);
+                admin.database().ref('data/levelTest').child(`${user_id}`).set(0);
+                for(var i = 0; i< 10; i++){
+                    checkQ = snapshot.child(`AskRandomQ/${user_id}/${i}`).val();
+                    if(checkQ === "True") {
+                        fini++;   
+                    }
+                }
+                //Quick Reply Firsttime question
+                const quickRepliesFirstTime = new Suggestion({
+                    title: `C'est la première fois que vous utilisez cette application, vous devez passer un examen pour tester votre niveau. Fini: ${fini}/10`,
+                    reply: "On y va"
+                })
+                quickRepliesFirstTime.addReply_("Annuler");
+                agent.add(quickRepliesFirstTime);
+            } else {
+                if(score < 500)
+                    niveau = "A1";
+    
+                if(score >= 500 && score < 1000)
+                    niveau = "A2";
+    
+                if(score >=1000 && score < 1500)
+                    niveau = "B1";
+    
+                if(score >=1500 && score < 2000)
+                    niveau = "B2";
+    
+                if(score >=2000 && score < 2500)
+                    niveau = "C1";
+    
+                if(score >=2500 && score <= 3000)
+                    niveau = "C2";
+                
+                agent.add(`Votre niveau est: ${niveau}`);
+                agent.add(`Votre score est: ${score}`);
+                agent.add(quickReplies4A);
+            }
+        });
+    }
+
     // Generate Random questions 
     function askRandom(agent)
     {   
         return ref.once(`value`).then((snapshot)=>{
             var ID;// Global random seed for question's ID
             var score = snapshot.child(`scores/${user_id}`).val();
+            var levelTest = snapshot.child(`levelTest/${user_id}`).val();
+            var checkQ;
+            var niv;
             var i,j;
-            if(score < 500)
-                ID = randomInt(0,4);
-            else if(score >= 500 && score < 1000)
-                ID = randomInt(4,7);
 
-            var sumQ = 0;
-            if(score < 500) {
-                for(i = 0; i < 4; i++) {
-                    if(snapshot.child(`AskRandomQ/${user_id}/${i}`).val() === "True")
-                        sumQ++; 
+            if(levelTest === 0) {
+                var fini = 0;
+                for(i = 0; i< 10; i++){
+                    fini++;
+                    checkQ = snapshot.child(`AskRandomQ/${user_id}/${i}`).val();
+                    if(checkQ !== "True") {
+                        ID = i;
+                        break;     
+                    }
                 }
-            }
-            else if(score >= 500 && score < 1000) {
-                for(i = 4; i < 7; i++) {
-                    if(snapshot.child(`AskRandomQ/${user_id}/${i}`).val() === "True")
-                        sumQ++; 
-                }
-            }
+                if(fini === 10) 
+                    admin.database().ref('data/levelTest').child(`${user_id}`).set(1);
+            } else {
+                    if(score < 500)
+                        niv = "A1";
+                    else if(score >= 500 && score < 1000)
+                            niv = "A2";
+                        else if(score >= 1000 && score < 1500)
+                                niv = "B1";
+                            else if(score >= 1500 && score < 2000)
+                                    niv = "B2";
+                                else if(score >= 2000 && score < 2500)
+                                        niv = "C1";
+                                        else
+                                        niv = "C2";
+
+                    switch(niv){
+                        case "A1":
+                            ID = randomInt(10,13);
+                            break;
+                        case "A2":
+                            ID = randomInt(4,7);
+                            break;
+                    }
+
+                    var sumQ = 0;
+                    switch(niv){
+                        case "A1":
+                            for(i = 10; i < 13; i++) {
+                                if(snapshot.child(`AskRandomQ/${user_id}/${i}`).val() === "True")
+                                    sumQ++; 
+                            }
+                            break;
+                        case "A2":
+                            for(i = 4; i < 7; i++) {
+                                if(snapshot.child(`AskRandomQ/${user_id}/${i}`).val() === "True")
+                                    sumQ++; 
+                            }
+                            break;
+                    }
             
-            if(score < 500) {
-                if(sumQ === 3)
-                    for(j = 0; j < 4; j++) {
-                        admin.database().ref('data/AskRandomQ').child(`${user_id}/${j}`).set('False');
+                    
+                    switch(niv){
+                        case "A1":
+                            if(sumQ === 2)
+                                for(j = 10; j < 13; j++) {
+                                    admin.database().ref('data/AskRandomQ').child(`${user_id}/${j}`).set('False');
+                                }
+                            break;
+                        case "A2":
+                            if(sumQ === 2)
+                                for(j = 4; j < 7; j++) {
+                                    admin.database().ref('data/AskRandomQ').child(`${user_id}/${j}`).set('False');
+                                }
+                            break;
                     }
-            }
-            else if(score >= 500 && score < 1000) {
-                if(sumQ === 2)
-                    for(j = 4; j < 7; j++) {
-                        admin.database().ref('data/AskRandomQ').child(`${user_id}/${j}`).set('False');
+ 
+                    checkQ = snapshot.child(`AskRandomQ/${user_id}/${ID}`).val();
+                    while(checkQ === "True"){
+                        switch(niv){
+                            case "A1":
+                                ID = randomInt(10,13);
+                                break;
+                            case "A2":
+                                ID = randomInt(4,7);
+                                break;
+                        }
+                        checkQ = snapshot.child(`AskRandomQ/${user_id}/${ID}`).val();
+                        admin.database().ref('data/AskRandomQ').child(`${user_id}/${ID}`).set('False');
                     }
-            }
+                }
 
-                
-            var checkQ = snapshot.child(`AskRandomQ/${user_id}/${ID}`).val();
-            while(checkQ === "True"){
-                if(score < 500)
-                    ID = randomInt(0,4);
-                else if(score >= 500 && score < 1000)
-                    ID = randomInt(4,7);
-                checkQ = snapshot.child(`AskRandomQ/${user_id}/${ID}`).val();
-                admin.database().ref('data/AskRandomQ').child(`${user_id}/${ID}`).set('False');
-            }
+                admin.database().ref('data/CurrentQuestion').child(`${user_id}`).set(ID);
+                var question = snapshot.child(`questions/${ID}`).val();
+                var answer0 = snapshot.child(`answers/${ID}/0`).val();
+                var answer1 = snapshot.child(`answers/${ID}/1`).val();
+                var answer2 = snapshot.child(`answers/${ID}/2`).val();
+                var answer3 = snapshot.child(`answers/${ID}/3`).val();
+                // eslint-disable-next-line promise/always-return
+                if(question !== null)
+                {
+                    agent.add(`[${ID+1}] - ${question}`);
 
-            admin.database().ref('data/CurrentQuestion').child(`${user_id}`).set(ID);
-            var question = snapshot.child(`questions/${ID}`).val();
-            var answer0 = snapshot.child(`answers/${ID}/0`).val();
-            var answer1 = snapshot.child(`answers/${ID}/1`).val();
-            var answer2 = snapshot.child(`answers/${ID}/2`).val();
-            var answer3 = snapshot.child(`answers/${ID}/3`).val();
-            // eslint-disable-next-line promise/always-return
-            if(question !== null)
-            {
-                agent.add(`[${ID+1}] - ${question}`);
+                    const quickReplies1 = new Suggestion({
+                        title: "Choisissez une réponse",
+                        reply: `${answer0}`
+                    })
+                    quickReplies1.addReply_(`${answer1}`);
+                    quickReplies1.addReply_(`${answer2}`);
+                    quickReplies1.addReply_(`${answer3}`);
+        
+                    agent.add(quickReplies1);
 
-                const quickReplies1 = new Suggestion({
-                    title: "Choisissez une réponse",
-                    reply: `${answer0}`
-                })
-                quickReplies1.addReply_(`${answer1}`);
-                quickReplies1.addReply_(`${answer2}`);
-                quickReplies1.addReply_(`${answer3}`);
-    
-                agent.add(quickReplies1);
-
-                admin.database().ref('data/AskRandomQ').child(`${user_id}/${ID}`).set('True');
-            }
+                    admin.database().ref('data/AskRandomQ').child(`${user_id}/${ID}`).set('True');
+                }
         });
     }
 
@@ -214,7 +308,9 @@ exports.chatBot = functions.https.onRequest((request, response) => {
             var currentQuestion = snapshot.child(`CurrentQuestion/${user_id}`).val();
             var correctA = snapshot.child(`corrects/${currentQuestion}`).val();
             var explication = snapshot.child(`notes/${currentQuestion}`).val();
-            var valeur;
+            var levelTest = snapshot.child(`levelTest/${user_id}`).val();
+            var score;
+            var niveau;
             var check = false;
 
             if(ans === correctA) {
@@ -227,25 +323,89 @@ exports.chatBot = functions.https.onRequest((request, response) => {
             else if(check === true){
                 agent.add(`C'est Correct :D`);    
                 agent.add(`${explication}`);
-                valeur = snapshot.child(`scores/${user_id}`).val();
-                valeur += 25;
-                admin.database().ref('data/scores').child(`${user_id}`).set(valeur);
+                score = snapshot.child(`scores/${user_id}`).val();
+                switch(currentQuestion){ //x10 quand prêt
+                    case 0:
+                        score += 20;
+                        break;
+                    case 1:
+                        score += 20;
+                        break;
+                    case 2:
+                        score += 25;
+                        break;
+                    case 3:
+                        score += 25;
+                        break;
+                    case 4:
+                        score += 30;
+                        break;
+                    case 5:
+                        score += 30;
+                        break;
+                    case 6:
+                        score += 30;
+                        break;
+                    case 7:
+                        score += 35;
+                        break;
+                    case 8:
+                        score += 35;
+                        break;
+                    case 9:
+                        score += 35;
+                        break;
+                    default:
+                        score += 25;
+                        break;
+                }
+                admin.database().ref('data/scores').child(`${user_id}`).set(score);
             }
             //eslint-disable-next-line promise/always-return
             else if(check !== true && explication !== null){ 
                 agent.add(`Ce n'est pas correct :(`);              
                 agent.add(`La bonne réponse est: "${correctA}"`);    
                 agent.add(`Explication: ${explication}`);
-                valeur = snapshot.child(`scores/${user_id}`).val();
-                valeur -= 25;
-                admin.database().ref('data/scores').child(`${user_id}`).set(valeur);                                                                                        
+                score = snapshot.child(`scores/${user_id}`).val();
+                if(levelTest === 2)
+                    score -= 25;
+                admin.database().ref('data/scores').child(`${user_id}`).set(score);                                                                                        
             }       
             else {
-                agent.add(`Pardon, il y a une erreur, réessayez!`);
-                
+                agent.add(`Pardon, il y a une erreur, réessayez!`);   
             }
-
-            agent.add(quickReplies4);
+            if(levelTest === 1) {
+                if(score < 500)
+                    niveau = "A1";
+    
+                if(score >= 500 && score < 1000)
+                    niveau = "A2";
+    
+                if(score >=1000 && score < 1500)
+                    niveau = "B1";
+    
+                if(score >=1500 && score < 2000)
+                    niveau = "B2";
+    
+                if(score >=2000 && score < 2500)
+                    niveau = "C1";
+    
+                if(score >=2500 && score <= 3000)
+                    niveau = "C2";
+                
+                //Quick Reply Finish
+                const quickRepliesFinish = new Suggestion({
+                    title: `Votre niveau est: ${niveau} `,
+                    reply: "Annuler"
+                })
+                agent.add(`Vous avez terminé votre premier test de niveau.`);
+                agent.add(`Votre score est: ${score}`);
+                admin.database().ref('data/levelTest').child(`${user_id}`).set(2);
+                agent.add(quickRepliesFinish);
+            }
+            else
+                agent.add(quickReplies4);
+            
         });       
     }
 
@@ -454,12 +614,12 @@ exports.chatBot = functions.https.onRequest((request, response) => {
                 }
             }
             // eslint-disable-next-line promise/no-nesting
-            return admin.database().ref(`data/userID`).once(`value`).then((snapshot)=>{
+            return admin.database().ref(`data`).once(`value`).then((snapshot)=>{
                 var valeur;
                 var position;
                 var deja = false;
                 for(var i = 0; i< 1000; i++) {
-                    valeur = snapshot.child(`${i}`).val();
+                    valeur = snapshot.child(`userID/${i}`).val();
                     // eslint-disable-next-line promise/always-return
                     if(valeur === null) {
                           position = i;
@@ -467,7 +627,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
                     }
                 }
                 for(var j = 0; j < position; j++) {
-                    valeur = snapshot.child(`${j}`).val();
+                    valeur = snapshot.child(`userID/${j}`).val();
                     if(valeur === user_id) {
                         deja = true;
                         break;
@@ -475,7 +635,6 @@ exports.chatBot = functions.https.onRequest((request, response) => {
                 }
                 if(deja === false) {
                     admin.database().ref('data/userID').child(`${position}`).set(user_id);
-                    admin.database().ref('data/scores').child(`${user_id}`).set(1000);
                 }
             });
         });
@@ -669,6 +828,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     intentMap.set('Horoscopes - custom', horoscopes);
     intentMap.set('Definition', defineWord);
     intentMap.set('Resultat', regarderNiveau);
+    intentMap.set('TCFNotification', TCFStation);
     agent.handleRequest(intentMap);
 });
 
