@@ -322,7 +322,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
                 agent.add(`Essayez d'y répondre, ne vous inquiétez pas de l'échec 🤗`);
             }
             else if(check === true){
-                agent.add(`C'est Correct :D`);    
+                agent.add(`⭕ C'est Correct :D`);    
                 agent.add(`${explication}`);
                 score = snapshot.child(`scores/${user_id}`).val();
                 switch(currentQuestion){ //x10 quand prêt
@@ -364,7 +364,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
             }
             //eslint-disable-next-line promise/always-return
             else if(check !== true && explication !== null){ 
-                agent.add(`Ce n'est pas correct :(`);              
+                agent.add(`❌ Ce n'est pas correct :(`);              
                 agent.add(`La bonne réponse est: "${correctA}"`);    
                 agent.add(`Explication: ${explication}`);
                 score = snapshot.child(`scores/${user_id}`).val();
@@ -696,8 +696,16 @@ exports.chatBot = functions.https.onRequest((request, response) => {
             return getPageContent(`${URL}`).then($ => {
                 //console.log($('div.view-content > ul').text())
                 var text = $('div.horoscope-content > p').text();
+                var text1 = '';
+                for(var i = 0; i < 999; i++){
+                    
+                    if(i > 400 && text[i] === '\n'){
+                        break;
+                    }
+                    text1 += text[i];
+                }
                 agent.add(`Horoscopes ${sign}: `);
-                agent.add(text);
+                agent.add(text1);
                 agent.add(quickReplies2F);
             })
         }
@@ -810,10 +818,8 @@ exports.chatBot = functions.https.onRequest((request, response) => {
                         break;
                 }
                 temp1 /= 10;
-                console.log(temp1);
                 if(temp1 < 10){
                     temp1 = Math.floor(temp1) %10;
-                    console.log(temp1);
                     switch(temp1){
                         case 0:
                             score[0] += '0️⃣';
@@ -850,6 +856,11 @@ exports.chatBot = functions.https.onRequest((request, response) => {
                 
             }
             finalScore = score[0] + score[1] + score[2] + score[3] + score[4];
+
+            if(valeur < 0){
+                finalScore = `❗❓❗❓❗`;
+            }
+
             if(valeur < 500)
                 niveau = "🇦1️⃣";
 

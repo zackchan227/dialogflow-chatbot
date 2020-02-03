@@ -27,5 +27,14 @@ const URL = `https://www.horoscope.com/fr/horoscopes/general/horoscope-general-d
                 // agent.add(`Horoscopes ${sign}: `);
                 // agent.add(text);
                 // agent.add(quickRepliesTest);
-                console.log(text);
+                //console.log(text);
+                var text1 = '';
+                for(var i = 0; i < 500; i++){
+                    
+                    if(i > 400 && text[i] === '\n'){
+                        break;
+                    }
+                    text1 += text[i];
+                }
+                console.log(text1);
             })
