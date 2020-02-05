@@ -21,6 +21,7 @@ const esrever = require('esrever');
 //const {google} = require('googleapis');
 const projectId = 'mr-fap-naainy';
 const {Translate} = require('@google-cloud/translate').v2;
+//const welcomeFunction = require('./welcome');
 //const projectID = JSON.parse(process.env.FIREBASE_CONFIG).projectId;
 
 const translate = new Translate({projectId});
@@ -54,6 +55,12 @@ exports.chatBot = functions.https.onRequest((request, response) => {
         reply: "Suivant"
     })
     quickRepliesF.addReply_("Annuler");
+
+    const quickRepliesFF = new Suggestion({
+        title: "Que voulez-vous faire après?",
+        reply: "Un autre"
+    })
+    quickRepliesFF.addReply_("Annuler");
 
     const quickRepliesE = new Suggestion({
         title: "What do you want to do next?",
@@ -470,7 +477,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
         });
     }
 
-    // Function is made for 4
+    // Function is made 4 for
     function talk4For(agent)
     {
         return ref.child("idioms").once("value", function(snapshot) {
@@ -482,6 +489,24 @@ exports.chatBot = functions.https.onRequest((request, response) => {
             }
             else agent.add('Il y a une erreur, réessayez svp');
             agent.add(quickRepliesF);
+          })
+    }
+
+    // Function is made for 4
+    function talkFor4(agent){
+        return ref.child("expressions").once("value", function(snapshot) {
+            var max = snapshot.numChildren();
+            var ran = randomInt(0,max);     
+            var express =  snapshot.child(`${ran}/express`).val();
+            var maxEx =  snapshot.child(`${ran}/example`).numChildren();
+            var ranEx = randomInt(0,maxEx);
+            var example = snapshot.child(`${ran}/example/${ranEx}`).val();
+            if(express !== null && example !== null){
+                agent.add(`[L'expression ${ran+1}] `+ express);
+                agent.add(`[L'exemple ${ranEx+1}] `+ example);
+            }
+            else agent.add('Il y a une erreur, réessayez svp');
+            agent.add(quickRepliesFF);
           })
     }
 
@@ -561,27 +586,27 @@ exports.chatBot = functions.https.onRequest((request, response) => {
       }
 
     
-    // Obtenir l'identifiant utilisateur facebook
-    var user_id = agent.originalRequest.payload.data.sender.id;
+    
 
     // Default welcome when start to the conversation
     function welcome(agent) {
-
+        // Obtenir l'identifiant utilisateur facebook
+        var user_id = agent.originalRequest.payload.data.sender.id;
         var greeting = agent.parameters['yo'];
         var lang;
         // Appel au graphique Facebook pour obtenir les informations des utilisateurs
         var url = `https://graph.facebook.com/${user_id}?fields=name&access_token=EAADLSmoiLyMBALPNcqIorb0fCE6IpOb6xoxJawelRLZCmZCeuVnAg859nXhimFZCSAK21OT2PclZBT4t7paZANzWH4RDqVsySmASyFrZABmlJOZCYAZBZBaCwVvrxXwmf5PI7GZAvkDGjxOZC0rN2zCZCCzyQ9Dxs6RndIG8RuJNW3ZCG5gZDZD`;
         
         var options = {
-          uri: url,
-          json: true
+        uri: url,
+        json: true
         };
 
         translate.detect(greeting, (err, results) => {
             if (!err) {
-              lang = results.language;
+            lang = results.language;
             }
-          });
+        });
 
         return rp.get( options )
         // eslint-disable-next-line promise/always-return
@@ -616,8 +641,8 @@ exports.chatBot = functions.https.onRequest((request, response) => {
                     valeur = snapshot.child(`userID/${i}`).val();
                     // eslint-disable-next-line promise/always-return
                     if(valeur === null) {
-                          position = i;
-                          break;
+                        position = i;
+                        break;
                     }
                 }
                 for(var j = 0; j < position; j++) {
@@ -1052,6 +1077,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
         });
     }
 
+   
     // // Uncomment and edit to make your own intent handler
     // // uncomment `intentMap.set('your intent name here', yourFunctionHandler);`
     // // below to get this function to be run when a Dialogflow intent is matched
@@ -1090,6 +1116,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     intentMap.set('Answers', checkAnswer);
     intentMap.set('AnswersFallback', checkFallback);
     intentMap.set('Idioms', talk4For);
+    intentMap.set('Expressions', talkFor4);
     intentMap.set('Translate', translateText);
     intentMap.set('Horoscopes', contentHoroscopes);
     intentMap.set('Horoscopes - custom', horoscopes);
