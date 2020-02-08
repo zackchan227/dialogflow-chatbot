@@ -585,17 +585,16 @@ exports.chatBot = functions.https.onRequest((request, response) => {
         agent.add(quickReplies2F);
       }
 
-    
-    
+    // Obtenir l'identifiant utilisateur facebook
+    // Cette variable doit être globale
+    var user_id = agent.originalRequest.payload.data.sender.id;
 
     // Default welcome when start to the conversation
     function welcome(agent) {
-        // Obtenir l'identifiant utilisateur facebook
-        var user_id = agent.originalRequest.payload.data.sender.id;
         var greeting = agent.parameters['yo'];
         var lang;
         // Appel au graphique Facebook pour obtenir les informations des utilisateurs
-        var url = `https://graph.facebook.com/${user_id}?fields=name&access_token=EAADLSmoiLyMBALPNcqIorb0fCE6IpOb6xoxJawelRLZCmZCeuVnAg859nXhimFZCSAK21OT2PclZBT4t7paZANzWH4RDqVsySmASyFrZABmlJOZCYAZBZBaCwVvrxXwmf5PI7GZAvkDGjxOZC0rN2zCZCCzyQ9Dxs6RndIG8RuJNW3ZCG5gZDZD`;
+        var url = `https://graph.facebook.com/${user_id}?fields=name&access_token=EAADLSmoiLyMBAHjhTE5QbiZAoGcVCcJEq1fmBTSlzYS98nMWA7utAuZAcSmZA5UiheZCpkHpRoT7LhnVPWu4LZAa7YyDSnlN8FZBH7dVnoKIPgTZBJ3P3HBNiBsKfeEvQIRJhK8ugxfFTMHCAaveSXKanpd8IDu7yy6M06U27ybJAZDZD`;
         
         var options = {
         uri: url,

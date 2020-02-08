@@ -41,4 +41,7 @@ Step 5: "Dialogflow-chatbot" is ready to serve
     Step 3: replace "dialogflow-fulfillment": "^0.5.0" with "dialogflow-fulfillment": "git+https://github.com/naranjja           dialogflow-fulfillment-nodejs.git"
 
     Step 4: "Dialogflow-chatbot" is ready to serve
+
+2. Dialogflow-chatbot get stuck
+**Solution: Take a look if $user_id is a global variable or not. This mistake can cause so many problem, even when you redeploy an older function to fix it. Your app will still get stuck for an hour or more.
              
