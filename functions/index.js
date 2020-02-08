@@ -612,22 +612,22 @@ exports.chatBot = functions.https.onRequest((request, response) => {
         // eslint-disable-next-line promise/always-return
         .then( body => {
             if(greeting === 'yo' || greeting === 'Yo'){
-                agent.add(`Yo, what's up ${body.name}!! Long time no see, how are you bro?`);
+                agent.add(`Yo, what's up ${body.name}‼️ Long time no see, how are you bro?`);
                 agent.add(quickRepliesTest);
             }
             else{
                 switch(lang)
                 {
                     case 'en':
-                        agent.add(`Hello ${body.name}!!`);
+                        agent.add(`Hello ${body.name}‼️`);
                         agent.add(quickReplies2E);
                         break;
                     case 'fr':
-                        agent.add(`Bonjour ${body.name}!!`);
+                        agent.add(`Bonjour ${body.name}‼️`);
                         agent.add(quickReplies2F);
                         break;
                     case 'vi':
-                        agent.add(`Sin trào ${body.name}!!`);
+                        agent.add(`Sin trào ${body.name}‼️`);
                         agent.add(quickReplies2V);
                         break;
                 }
