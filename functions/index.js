@@ -241,7 +241,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
             var verQuestion;
 
             // Niveau du joueur
-            var niv;
+            var niveau;
 
             // Cette variable est médiée pour changer la question
             var lvl;
@@ -283,17 +283,17 @@ exports.chatBot = functions.https.onRequest((request, response) => {
                 // si non
                     // Vérifier le niveau du joueur
                     if(score < 500)
-                        niv = "A1";
+                        niveau = "A1";
                     else if(score >= 500 && score < 1000)
-                            niv = "A2";
+                            niveau = "A2";
                         else if(score >= 1000 && score < 1500)
-                                niv = "B1";
+                                niveau = "B1";
                             else if(score >= 1500 && score < 2000)
-                                    niv = "B2";
+                                    niveau = "B2";
                                 else if(score >= 2000 && score < 2500)
-                                        niv = "C1";
+                                        niveau = "C1";
                                         else
-                                        niv = "C2";
+                                        niveau = "C2";
                    
                     // Ces 2 fonctions vérifient si le joueur a répondu à toutes les questions 
                     // du questionnaire au niveau du joueur
