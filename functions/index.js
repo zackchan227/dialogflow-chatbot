@@ -157,24 +157,35 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     quickRepliesHoroscopesChinois.addReply_("🐶");
     quickRepliesHoroscopesChinois.addReply_("🐷");
 
+    // Station de gestion des questions TCF
     function TCFStation(agent) {
         return ref.once(`value`).then((snapshot)=>{
+            // Score du joueur
             var score = snapshot.child(`scores/${user_id}`).val();
+
+            // Niveau du joueur
             var niveau;
-            var levelTest = snapshot.child(`levelTest/${user_id}`).val();
+
+            // Cette variable vérifie si le joueur a vérifié son niveau
+            var testDeNiveau = snapshot.child(`levelTest/${user_id}`).val();
+
+            // Nombre de questions complétées
             var fini = 0;
-            var checkQ;
-            if(score === null || levelTest === 0) {
+
+            // Cette variable vérifie si la question a été posée
+            var verQuestion;
+
+            if(score === null || testDeNiveau === 0) {
                 if(score === null)
                     admin.database().ref('data/scores').child(`${user_id}`).set(0);
                 admin.database().ref('data/levelTest').child(`${user_id}`).set(0);
                 for(var i = 0; i< 10; i++){
-                    checkQ = snapshot.child(`AskRandomQ/${user_id}/${i}`).val();
-                    if(checkQ === "True") {
+                    verQuestion = snapshot.child(`AskRandomQ/${user_id}/${i}`).val();
+                    if(verQuestion === "True") {
                         fini++;   
                     }
                 }
-                //Quick Reply Firsttime question
+                // Réponse rapide pour les premières questions
                 const quickRepliesFirstTime = new Suggestion({
                     title: `C'est la première fois que vous utilisez cette application, vous devez passer un examen pour tester votre niveau. Fini: ${fini}/10`,
                     reply: "On y va"
@@ -203,34 +214,74 @@ exports.chatBot = functions.https.onRequest((request, response) => {
                 agent.add(`Votre niveau est: ${niveau}`);
                 agent.add(`Votre score est: ${score}`);
                 agent.add(quickReplies4A);
-            }
-        });
+        }
+    });
     }
 
-    // Generate Random questions 
+    // Générer des questions aléatoires
     function askRandom(agent)
     {   
         return ref.once(`value`).then((snapshot)=>{
-            var ID;// Global random seed for question's ID
+
+            // Nombre de questions (dans la base de données Firebase) 
+            // Lorsque vous modifiez le nombre de questions dans la base de données, 
+            // modifiez simplement cette variable, pas besoin d'modifiez le code.
+            var nombreDeQuestion = 4;
+
+            // Cette variable contient l'ID de la question
+            var ID;
+
+            // Score du joueur
             var score = snapshot.child(`scores/${user_id}`).val();
-            var levelTest = snapshot.child(`levelTest/${user_id}`).val();
-            var checkQ;
+
+            // Cette variable vérifie si le joueur a vérifié son niveau
+            var testDeNiveau = snapshot.child(`levelTest/${user_id}`).val();
+
+            // Cette variable vérifie si la question a été posée
+            var verQuestion;
+
+            // Niveau du joueur
             var niv;
+
+            // Cette variable est médiée pour changer la question
+            var lvl;
+
+            // Cette variable identifie le joueur participant au paquet de questions initiales (questions) 
+            // ou au paquet de questions TCF (TCFquestions)
+            var nouvelOuPas="";
+
+            // Cette variable vérifie si le joueur a répondu à toutes les questions 
+            // du questionnaire au niveau du joueur
+            var sommeQuestion = 0;
+
+            // Cette variable contient l'ID de la question, prise en charge de la variable ID
+            var IDQuestion;
+
+            // Variables temporaires pour les boucles
             var i,j;
 
-            if(levelTest === 0) {
+            // Vérifiez si un nouveau joueur
+            if(testDeNiveau === 0) {
+                // si oui
                 var fini = 0;
+                // Poser 10 questions de test de niveau...
                 for(i = 0; i< 10; i++){
                     fini++;
-                    checkQ = snapshot.child(`AskRandomQ/${user_id}/${i}`).val();
-                    if(checkQ !== "True") {
+                    verQuestion = snapshot.child(`AskRandomQ/${user_id}/${i}`).val();
+                    if(verQuestion !== "True") {
                         ID = i;
                         break;     
                     }
                 }
-                if(fini === 10) 
+                // Lorsque 10 questions sont terminées...
+                if(fini === 10) {
                     admin.database().ref('data/levelTest').child(`${user_id}`).set(1);
+                    for(j = 0; j< 10; j++)
+                        admin.database().ref('data/AskRandomQ').child(`${user_id}/${j}`).set('False');   
+                }
             } else {
+                // si non
+                    // Vérifier le niveau du joueur
                     if(score < 500)
                         niv = "A1";
                     else if(score >= 500 && score < 1000)
@@ -243,106 +294,107 @@ exports.chatBot = functions.https.onRequest((request, response) => {
                                         niv = "C1";
                                         else
                                         niv = "C2";
-
-                    switch(niv){
-                        case "A1":
-                            ID = randomInt(10,13);
-                            break;
-                        case "A2":
-                            ID = randomInt(4,7);
-                            break;
+                   
+                    // Ces 2 fonctions vérifient si le joueur a répondu à toutes les questions 
+                    // du questionnaire au niveau du joueur
+                    for(i = 0; i < nombreDeQuestion; i++) {
+                        lvl = snapshot.child(`TCFNiveauDesQuestions/${niv}/${i}`).val();
+                        if(snapshot.child(`AskRandomQ/${user_id}/${lvl}`).val() === "True")
+                        sommeQuestion++; 
                     }
 
-                    var sumQ = 0;
-                    switch(niv){
-                        case "A1":
-                            for(i = 10; i < 13; i++) {
-                                if(snapshot.child(`AskRandomQ/${user_id}/${i}`).val() === "True")
-                                    sumQ++; 
-                            }
-                            break;
-                        case "A2":
-                            for(i = 4; i < 7; i++) {
-                                if(snapshot.child(`AskRandomQ/${user_id}/${i}`).val() === "True")
-                                    sumQ++; 
-                            }
-                            break;
-                    }
-            
-                    
-                    switch(niv){
-                        case "A1":
-                            if(sumQ === 2)
-                                for(j = 10; j < 13; j++) {
-                                    admin.database().ref('data/AskRandomQ').child(`${user_id}/${j}`).set('False');
-                                }
-                            break;
-                        case "A2":
-                            if(sumQ === 2)
-                                for(j = 4; j < 7; j++) {
-                                    admin.database().ref('data/AskRandomQ').child(`${user_id}/${j}`).set('False');
-                                }
-                            break;
-                    }
- 
-                    checkQ = snapshot.child(`AskRandomQ/${user_id}/${ID}`).val();
-                    while(checkQ === "True"){
-                        switch(niv){
-                            case "A1":
-                                ID = randomInt(10,13);
-                                break;
-                            case "A2":
-                                ID = randomInt(4,7);
-                                break;
+                    if(sommeQuestion === 3)
+                        for(j = 0; j < nombreDeQuestion; j++) {
+                            lvl = snapshot.child(`TCFNiveauDesQuestions/${niv}/${j}`).val();
+                            if(snapshot.child(`AskRandomQ/${user_id}/${lvl}`).val() === "True")
+                                admin.database().ref('data/AskRandomQ').child(`${user_id}/${lvl}`).set('False');
                         }
-                        checkQ = snapshot.child(`AskRandomQ/${user_id}/${ID}`).val();
-                        admin.database().ref('data/AskRandomQ').child(`${user_id}/${ID}`).set('False');
+                    
+                    // Question aléatoire
+                    IDQuestion = randomInt(0,nombreDeQuestion);
+                    lvl = snapshot.child(`TCFNiveauDesQuestions/${niv}/${IDQuestion}`).val();
+                    verQuestion = snapshot.child(`AskRandomQ/${user_id}/${lvl}`).val();
+    
+                    // Vérifier si la question a été posée
+                    while(verQuestion === "True"){
+                        IDQuestion = randomInt(0,nombreDeQuestion);
+                        lvl = snapshot.child(`TCFNiveauDesQuestions/${niv}/${IDQuestion}`).val();
+                        verQuestion = snapshot.child(`AskRandomQ/${user_id}/${lvl}`).val();
+                        // admin.database().ref('data/AskRandomQ').child(`${user_id}/${IDQuestion}`).set('False');
                     }
+                    
+                    nouvelOuPas = "TCF";
+                    ID = snapshot.child(`TCFNiveauDesQuestions/${niv}/${IDQuestion}`).val();
                 }
 
-                admin.database().ref('data/CurrentQuestion').child(`${user_id}`).set(ID);
-                var question = snapshot.child(`questions/${ID}`).val();
-                var answer0 = snapshot.child(`answers/${ID}/0`).val();
-                var answer1 = snapshot.child(`answers/${ID}/1`).val();
-                var answer2 = snapshot.child(`answers/${ID}/2`).val();
-                var answer3 = snapshot.child(`answers/${ID}/3`).val();
-                // eslint-disable-next-line promise/always-return
-                if(question !== null)
-                {
-                    agent.add(`[${ID+1}] - ${question}`);
+            // Afficher la question
+            admin.database().ref('data/CurrentQuestion').child(`${user_id}`).set(ID);
+            var question = snapshot.child(`${nouvelOuPas}questions/${ID}`).val();
+            var answer0 = snapshot.child(`${nouvelOuPas}answers/${ID}/0`).val();
+            var answer1 = snapshot.child(`${nouvelOuPas}answers/${ID}/1`).val();
+            var answer2 = snapshot.child(`${nouvelOuPas}answers/${ID}/2`).val();
+            var answer3 = snapshot.child(`${nouvelOuPas}answers/${ID}/3`).val();
+            // eslint-disable-next-line promise/always-return
+            if(question !== null) {
+                agent.add(`[${ID+1}] - ${question}`);
 
-                    const quickReplies1 = new Suggestion({
-                        title: "Choisissez une réponse",
-                        reply: `${answer0}`
-                    })
-                    quickReplies1.addReply_(`${answer1}`);
-                    quickReplies1.addReply_(`${answer2}`);
-                    quickReplies1.addReply_(`${answer3}`);
+                const quickReplies1 = new Suggestion({
+                    title: "Choisissez une réponse",
+                    reply: `${answer0}`
+                })
+                quickReplies1.addReply_(`${answer1}`);
+                quickReplies1.addReply_(`${answer2}`);
+                quickReplies1.addReply_(`${answer3}`);
         
-                    agent.add(quickReplies1);
+                agent.add(quickReplies1);
 
-                    admin.database().ref('data/AskRandomQ').child(`${user_id}/${ID}`).set('True');
-                }
+                admin.database().ref('data/AskRandomQ').child(`${user_id}/${ID}`).set('True');
+            }
         });
     }
 
-    // Checking the correct answer of user in 4 answers
+    // Vérification de la bonne réponse de l'utilisateur en 4 réponses
     function checkAnswer(agent)
     {
         return ref.once(`value`).then((snapshot)=>{
+            // Cette variable identifie le joueur participant au paquet de questions initiales (questions) 
+            // ou au paquet de questions TCF (TCFquestions)
+            var nouvelOuPas;
+
+            // Cette variable vérifie si le joueur a vérifié son niveau
+            var testDeNiveau = snapshot.child(`levelTest/${user_id}`).val();
+            if(testDeNiveau === 0)
+                nouvelOuPas="";
+            else
+                nouvelOuPas="TCF";
+
+            // Réponse du joueur
             var ans = agent.parameters['answer'];
+
+            // Question actuelle est posée
             var currentQuestion = snapshot.child(`CurrentQuestion/${user_id}`).val();
-            var correctA = snapshot.child(`corrects/${currentQuestion}`).val();
-            var explication = snapshot.child(`notes/${currentQuestion}`).val();
-            var levelTest = snapshot.child(`levelTest/${user_id}`).val();
+
+            // La bonne réponse à la question
+            var correctA = snapshot.child(`${nouvelOuPas}corrects/${currentQuestion}`).val();
+
+            // Explication de la bonne réponse
+            var explication = snapshot.child(`${nouvelOuPas}notes/${currentQuestion}`).val();
+
+            // Score du joueur
             var score;
+
+            // Niveau du joueur
             var niveau;
+
+            // Cette variable vérifie si la réponse du joueur est bonne ou fausse
             var check = false;
 
+            // Vérifie si la réponse du joueur est bonne ou fausse
             if(ans === correctA) {
                 check = true;
             }
 
+            // Calculer le score du joueur
             if(ans === 'je ne sais pas' || ans === 'Je ne sais pas'){
                 agent.add(`Essayez d'y répondre, ne vous inquiétez pas de l'échec 🤗`);
             }
@@ -393,7 +445,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
                 agent.add(`La bonne réponse est: "${correctA}"`);    
                 agent.add(`Explication: ${explication}`);
                 score = snapshot.child(`scores/${user_id}`).val();
-                if(levelTest === 2)
+                if(testDeNiveau === 2)
                     score -= 25;
                 admin.database().ref('data/scores').child(`${user_id}`).set(score);                                                                                        
             }       
@@ -401,7 +453,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
                 agent.add(`Pardon, il y a une erreur, réessayez!`);   
             }
 
-            if(levelTest === 1) {
+            if(testDeNiveau === 1) {
                 if(score < 500)
                     niveau = "🇦1️⃣";
     
@@ -420,19 +472,19 @@ exports.chatBot = functions.https.onRequest((request, response) => {
                 if(score >=2500 && score <= 3000)
                     niveau = "🇨2️⃣";
                 
-                //Quick Reply Finish
+                // Réponse rapide pour la fin du test de niveau
                 const quickRepliesFinish = new Suggestion({
                     title: `Votre niveau est ${niveau} `,
                     reply: "Annuler"
                 })
                 agent.add(`Vous avez terminé votre premier test de niveau.`);
                 agent.add(`Votre score est: ${score}`);
+                admin.database().ref('data/AskRandomQ').child(`${user_id}/9`).set('False');   
                 admin.database().ref('data/levelTest').child(`${user_id}`).set(2);
                 agent.add(quickRepliesFinish);
             }
             else
                 agent.add(quickReplies4);
-            
         });       
     }
 
