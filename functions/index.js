@@ -540,6 +540,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
             agent.add(`[${numero}] Votre question: ${question}`);
             agent.add(`Notre réponse: ${réponse}`);
             var remove = admin.database().ref(`contactez-Nous/${user_id}/${numero}`)
+            // eslint-disable-next-line promise/no-nesting
             remove.remove()
             .then(function() {
                 console.log("Remove succeeded.")
@@ -1004,6 +1005,68 @@ exports.chatBot = functions.https.onRequest((request, response) => {
         }
     }
 
+    function contentTarots(agent){
+        //agent.add(quickRepliesHoroscopes);
+    }
+    // eslint-disable-next-line consistent-return
+    // 
+    // eslint-disable-next-line consistent-return
+    function tarots(agent){
+        var sign = agent.parameters['horoscope'];
+        var index = randomInt(0,22) + 1;
+        // var horos = ['Bélier', 'Taureau', 'Gémeaux','Cancer','Lion', 'Viegre', 'Balance', 'Scorpion','Sagittaire', 'Capricorne','Verseau','Poissons'];
+        // var check = false;
+        // var index;
+        // for(var i = 0; i < 12; i++){
+        //     if(sign === horos[i]){
+        //         check = true;
+        //         index = i+1;
+        //         break;
+        //     }
+        // }
+
+        // if(check !== true){
+        //     agent.add(`Horoscope ${sign} n'est pas disponible`);
+        //     agent.add(quickRepliesTest);
+        //     return;
+        // }
+
+        if(check === true){
+            const URL = `https://www.horoscope.com/fr/tarot/signification-de-la-carte-du-tarot.aspx?TarotCardSelectorID_numericalint=${index}`; // Crawl data from URL
+            const getPageContent = (uri) => {
+                const options = {
+                    uri,
+                    headers: {
+                    'User-Agent': 'Request-Promise'
+                    },
+                    transform: (body) => {
+                    return cheerio.load(body) // Parsing the html code
+                    }
+                }
+            
+                return rp(options) // return Promise
+            }
+
+            
+            // eslint-disable-next-line promise/catch-or-return
+            // eslint-disable-next-line consistent-return
+            return getPageContent(`${URL}`).then($ => {
+                //console.log($('div.view-content > ul').text())
+                var text = $('div.span-9.span-xs-12.col').text();
+                var text1 = '';
+                for(var i = 0; i < 1696; i++){
+                    
+                    if(i > 200 && text[i] === '\n'){
+                        break;
+                    }
+                    text1 += text[i];
+                }
+                agent.add(text1);
+                //agent.add(quickReplies2F);
+            })
+        }
+    }
+
     function defineWord(agent){
         var word = agent.parameters['word'];
         //var ran = Math.floor((10) * Math.random());
@@ -1228,6 +1291,8 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     intentMap.set('Horoscopes - custom', horoscopes);
     intentMap.set('Horoscopes China', contentHoroscopesChinois);
     intentMap.set('Horoscopes China - custom', horoscopesChinois);
+    intentMap.set('Tarot', tarots);
+    //intentMap.set('Tarot - custom', tarots);
     intentMap.set('Definition', defineWord);
     intentMap.set('Resultat', regarderNiveau);
     intentMap.set('TCFNotification', TCFStation);
