@@ -298,33 +298,33 @@ exports.chatBot = functions.https.onRequest((request, response) => {
                     // Ces 2 fonctions vérifient si le joueur a répondu à toutes les questions 
                     // du questionnaire au niveau du joueur
                     for(i = 0; i < nombreDeQuestion; i++) {
-                        lvl = snapshot.child(`TCFNiveauDesQuestions/${niv}/${i}`).val();
+                        lvl = snapshot.child(`TCFNiveauDesQuestions/${niveau}/${i}`).val();
                         if(snapshot.child(`AskRandomQ/${user_id}/${lvl}`).val() === "True")
                         sommeQuestion++; 
                     }
 
                     if(sommeQuestion === 3)
                         for(j = 0; j < nombreDeQuestion; j++) {
-                            lvl = snapshot.child(`TCFNiveauDesQuestions/${niv}/${j}`).val();
+                            lvl = snapshot.child(`TCFNiveauDesQuestions/${niveau}/${j}`).val();
                             if(snapshot.child(`AskRandomQ/${user_id}/${lvl}`).val() === "True")
                                 admin.database().ref('data/AskRandomQ').child(`${user_id}/${lvl}`).set('False');
                         }
                     
                     // Question aléatoire
                     IDQuestion = randomInt(0,nombreDeQuestion);
-                    lvl = snapshot.child(`TCFNiveauDesQuestions/${niv}/${IDQuestion}`).val();
+                    lvl = snapshot.child(`TCFNiveauDesQuestions/${niveau}/${IDQuestion}`).val();
                     verQuestion = snapshot.child(`AskRandomQ/${user_id}/${lvl}`).val();
     
                     // Vérifier si la question a été posée
                     while(verQuestion === "True"){
                         IDQuestion = randomInt(0,nombreDeQuestion);
-                        lvl = snapshot.child(`TCFNiveauDesQuestions/${niv}/${IDQuestion}`).val();
+                        lvl = snapshot.child(`TCFNiveauDesQuestions/${niveau}/${IDQuestion}`).val();
                         verQuestion = snapshot.child(`AskRandomQ/${user_id}/${lvl}`).val();
                         // admin.database().ref('data/AskRandomQ').child(`${user_id}/${IDQuestion}`).set('False');
                     }
                     
                     nouvelOuPas = "TCF";
-                    ID = snapshot.child(`TCFNiveauDesQuestions/${niv}/${IDQuestion}`).val();
+                    ID = snapshot.child(`TCFNiveauDesQuestions/${niveau}/${IDQuestion}`).val();
                 }
 
             // Afficher la question
@@ -402,41 +402,44 @@ exports.chatBot = functions.https.onRequest((request, response) => {
                 agent.add(`⭕ C'est Correct :D`);    
                 agent.add(`${explication}`);
                 score = snapshot.child(`scores/${user_id}`).val();
-                switch(currentQuestion){ //x10 quand prêt
-                    case 0:
-                        score += 20;
-                        break;
-                    case 1:
-                        score += 20;
-                        break;
-                    case 2:
-                        score += 25;
-                        break;
-                    case 3:
-                        score += 25;
-                        break;
-                    case 4:
-                        score += 30;
-                        break;
-                    case 5:
-                        score += 30;
-                        break;
-                    case 6:
-                        score += 30;
-                        break;
-                    case 7:
-                        score += 35;
-                        break;
-                    case 8:
-                        score += 35;
-                        break;
-                    case 9:
-                        score += 35;
-                        break;
-                    default:
-                        score += 25;
-                        break;
-                }
+                if(testDeNiveau === 0) 
+                    switch(currentQuestion){ //x10 quand prêt
+                        case 0:
+                            score += 20;
+                            break;
+                        case 1:
+                            score += 20;
+                            break;
+                        case 2:
+                            score += 25;
+                            break;
+                        case 3:
+                            score += 25;
+                            break;
+                        case 4:
+                            score += 30;
+                            break;
+                        case 5:
+                            score += 30;
+                            break;
+                        case 6:
+                            score += 30;
+                            break;
+                        case 7:
+                            score += 35;
+                            break;
+                        case 8:
+                            score += 35;
+                            break;
+                        case 9:
+                            score += 35;
+                            break;
+                        default:
+                            score += 25;
+                            break;
+                    }
+                else
+                    score += 25;
                 admin.database().ref('data/scores').child(`${user_id}`).set(score);
             }
             //eslint-disable-next-line promise/always-return
@@ -488,9 +491,67 @@ exports.chatBot = functions.https.onRequest((request, response) => {
         });       
     }
 
+    function contactNous(agent) {
+        const { question } = agent.parameters;
+        var position;
+        var i;
+        return admin.database().ref('contactez-Nous').once(`value`).then((snapshot)=>{
+            for(i = 0; i < 100; i++)
+                if(snapshot.child(`${user_id}/${i}`).val() === null) {
+                    position = i;
+                    break;
+                }
+            admin.database().ref('contactez-Nous').child(`${user_id}/${position}/Question`).set(question); 
+            agent.add(`Votre question a été envoyée. Nous répondrons à votre question dans les plus brefs délais. N'oubliez pas votre numéro de question pour voir notre réponse.`);
+            agent.add(`Votre numero de question: ${position}`); 
+        });    
+    }
+
+    function questionStation(agent) {
+        var responsePret=false;
+        var i,j;
+        return admin.database().ref('contactez-Nous').once(`value`).then((snapshot)=>{
+            for(j = 0; j < 100; j++)
+                if(snapshot.child(`${user_id}/${j}/R`).val() !== null) {
+                    responsePret = true;
+                    break;
+                }
+            
+            if(responsePret === true) {
+                const quickRepliesQuestionU = new Suggestion({
+                    title: `Donnez-nous le numéro de votre question!`,
+                    reply: "0"
+                })
+                for(i = 1; i < 100; i++)
+                    if(snapshot.child(`${user_id}/${i}/R`).val() !== null) 
+                        quickRepliesQuestionU.addReply_(`${i}`);
+                agent.add(quickRepliesQuestionU);
+            } else {
+                agent.add("Désolé, vous n'avez aucune réponse de notre part");
+            }
+        });   
+    }
+
+    function regarderResponses(agent) {
+        const { numero } = agent.parameters;
+        return admin.database().ref('contactez-Nous').once(`value`).then((snapshot)=>{
+            var question = snapshot.child(`${user_id}/${numero}/Question`).val();
+            var réponse = snapshot.child(`${user_id}/${numero}/R`).val();
+            agent.add(`[${numero}] Votre question: ${question}`);
+            agent.add(`Notre réponse: ${réponse}`);
+            var remove = admin.database().ref(`contactez-Nous/${user_id}/${numero}`)
+            remove.remove()
+            .then(function() {
+                console.log("Remove succeeded.")
+            })
+            .catch(function(error) {
+                console.log("Remove failed: " + error.message)
+            });
+        });
+    }
+
     // Checking the incorrect answer of user in 4 answers
     function checkFallback(agent) {
-        
         return ref.once(`value`).then((snapshot)=>{
             var ran = randomInt(0,4);
             var a0 = snapshot.child(`answers/${id}/0`).val();
@@ -505,16 +566,12 @@ exports.chatBot = functions.https.onRequest((request, response) => {
             switch(ran)
             {
                 case 0: agent.add(text1);
-
                         break;
                 case 1: agent.add(text2);
-     
                         break;
                 case 2: agent.add(text3);
-
                         break;
                 case 3: agent.add(text4);
- 
                         break; 
             }
             const quickReplies5 = new Suggestion({
@@ -904,8 +961,6 @@ exports.chatBot = functions.https.onRequest((request, response) => {
             }
         }
 
-        
-
         if(check !== true){
             agent.add(`Horoscope ${sign} n'est pas disponible`);
             agent.add(quickRepliesTest);
@@ -1176,6 +1231,9 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     intentMap.set('Definition', defineWord);
     intentMap.set('Resultat', regarderNiveau);
     intentMap.set('TCFNotification', TCFStation);
+    intentMap.set('contactNous', contactNous);
+    intentMap.set('utilisateurquestionStation', questionStation);
+    intentMap.set('regarderResponses', regarderResponses);
     agent.handleRequest(intentMap);
 });
 
