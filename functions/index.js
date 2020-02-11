@@ -1295,7 +1295,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     intentMap.set('Horoscopes - custom', horoscopes);
     intentMap.set('Horoscopes China', contentHoroscopesChinois);
     intentMap.set('Horoscopes China - custom', horoscopesChinois);
-    intentMap.set('Tarot', tarots);
+    intentMap.set('Tarots', tarots);
     //intentMap.set('Tarot - custom', tarots);
     intentMap.set('Definition', defineWord);
     intentMap.set('Resultat', regarderNiveau);
