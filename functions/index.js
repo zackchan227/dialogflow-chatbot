@@ -1012,8 +1012,13 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     // 
     // eslint-disable-next-line consistent-return
     function tarots(agent){
-        var sign = agent.parameters['horoscope'];
+        //var sign = agent.parameters['horoscope'];
+        var check = false;
         var index = randomInt(0,22) + 1;
+        if(index > 0 && index < 23)
+        {
+            check = true;
+        }
         // var horos = ['Bélier', 'Taureau', 'Gémeaux','Cancer','Lion', 'Viegre', 'Balance', 'Scorpion','Sagittaire', 'Capricorne','Verseau','Poissons'];
         // var check = false;
         // var index;
@@ -1025,11 +1030,11 @@ exports.chatBot = functions.https.onRequest((request, response) => {
         //     }
         // }
 
-        // if(check !== true){
-        //     agent.add(`Horoscope ${sign} n'est pas disponible`);
-        //     agent.add(quickRepliesTest);
-        //     return;
-        // }
+        if(check !== true){
+            agent.add(`Il y a une erreur!`);
+            //agent.add(quickRepliesTest);
+            return;
+        }
 
         if(check === true){
             const URL = `https://www.horoscope.com/fr/tarot/signification-de-la-carte-du-tarot.aspx?TarotCardSelectorID_numericalint=${index}`; // Crawl data from URL
@@ -1051,7 +1056,6 @@ exports.chatBot = functions.https.onRequest((request, response) => {
             // eslint-disable-next-line promise/catch-or-return
             // eslint-disable-next-line consistent-return
             return getPageContent(`${URL}`).then($ => {
-                //console.log($('div.view-content > ul').text())
                 var text = $('div.span-9.span-xs-12.col').text();
                 var text1 = '';
                 for(var i = 0; i < 1696; i++){
@@ -1061,7 +1065,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
                     }
                     text1 += text[i];
                 }
-                agent.add(text1);
+                agent.add(`${text1}`);
                 //agent.add(quickReplies2F);
             })
         }
