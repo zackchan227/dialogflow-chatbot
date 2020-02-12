@@ -79,12 +79,24 @@ exports.chatBot = functions.https.onRequest((request, response) => {
         title: "Que-voulez vous faire?",
         reply: "TCF Question"
     })
+    quickReplies2F.addReply_("Outils");
+    quickReplies2F.addReply_("Divertissement");
     quickReplies2F.addReply_("Contacte l'admin");
-    quickReplies2F.addReply_("Mon niveau");
-    quickReplies2F.addReply_("Expressions Idiomatiques");
-    quickReplies2F.addReply_("Traduction");
-    quickReplies2F.addReply_("Définition");
-    quickReplies2F.addReply_("Horoscopes");
+
+    const quickRepliesOutils = new Suggestion({
+        title: "Choisissez un outil pour vous aider à apprendre le français:",
+        reply: "Expressions Idiomatiques"
+    })
+    quickRepliesOutils.addReply_("Expressions Communes");
+    quickRepliesOutils.addReply_("Définition");
+    quickRepliesOutils.addReply_("Traduction");
+
+    const quickRepliesDivertissement = new Suggestion({
+        title: "Vous pouvez vous référer aux horoscopes, aux horoscopes chinois et au tarot pour prédire votre destin aujourd'hui.",
+        reply: "Horoscopes"
+    })
+    quickRepliesDivertissement.addReply_("Horoscopes Chinois");
+    quickRepliesDivertissement.addReply_("Tarot");
 
     const quickReplies2E = new Suggestion({
         title: "There are random question and talk for 4, what's your choice?",
@@ -825,7 +837,61 @@ exports.chatBot = functions.https.onRequest((request, response) => {
         // agent.add(`I didn't understand`);
         // agent.add(`I'm sorry, can you try again?`);
     }
+
+    function outilsStation(agent) {
+          agent.add(quickRepliesOutils);
+    }
     
+    function divertissementStation(agent) {
+        var datetime = new Date();
+        var dd = datetime.getDate();
+        var mm = datetime.getMonth()+1;
+        var mois;
+        switch(mm){
+            case 1:
+                mois = "Janvier";
+                break;
+            case 2:
+                mois = "Février";
+                break;
+            case 3:
+                mois = "Mars";
+                break;
+            case 4:
+                mois = "Avril";
+                break;
+            case 5:
+                mois = "Mai";
+                break;
+            case 6:
+                mois = "Juin";
+                break;
+            case 7:
+                mois = "Juillet";
+                break;
+            case 8:
+                mois = "Août";
+                break;
+            case 9:
+                mois = "Septembre";
+                break;
+            case 10:
+                mois = "Octobre";
+                break;
+            case 11:
+                mois = "Novembre";
+                break;
+            case 12:
+                mois = "Décembre";
+                break;
+        }
+
+        var yyyy = datetime.getFullYear();
+
+        agent.add(`Aujourd'hui c'est: ${dd} ${mois} ${yyyy}`);
+        agent.add(quickRepliesDivertissement);
+    }
+
     function contentHoroscopes(agent){
         agent.add(quickRepliesHoroscopes);
     }
@@ -1331,6 +1397,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     // // for a complete Dialogflow fulfillment library Actions on Google client library v2 integration sample
 
     // Run the proper function handler based on the matched Dialogflow intent name
+    
     let intentMap = new Map();
     intentMap.set('Default Welcome Intent', welcome);
     // intentMap.set('Default Fallback Intent', fallback);
@@ -1338,9 +1405,11 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     intentMap.set('Random', askRandom);
     intentMap.set('Answers', checkAnswer);
     intentMap.set('AnswersFallback', checkFallback);
+    intentMap.set('outilsStation', outilsStation);
     intentMap.set('Idioms', talk4For);
     intentMap.set('Expressions', talkFor4);
     intentMap.set('Translate', translateText);
+    intentMap.set('divertissementStation', divertissementStation);
     intentMap.set('Horoscopes', contentHoroscopes);
     intentMap.set('Horoscopes - custom', horoscopes);
     intentMap.set('Horoscopes China', contentHoroscopesChinois);
