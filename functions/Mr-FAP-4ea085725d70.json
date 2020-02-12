@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "mr-fap-naainy",
+  "private_key_id": "4ea085725d70f75a57582ff35610e7f44a3f747c",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCm1GeLutL6cLec\nl0wd6j8oAlhwl1a3ycFNHS4h24MRr+wpWyr8zCJAfbbd8aZ9/8EqKPCLRtzY3T1v\nd8KIkNZ5hu6h4OFLg3P4nLm9KyyRv4CmcY5RPFn05s088Bg9m5TsdHW5uob7OYQH\nTuyEMxPuV/z+hgvQBb1rHll57we/EyrPWy4j4vwMyon2LoB4pqQHIroVL44fKltH\nnONmlU+0PJpjlhLk5K6ZfmGdG2bcxyTqtPpT0KClNeltvvyOfPnLnhAMVVzb2H9v\n3vQD+kuDPHTSpjLD44fNeDULbMSq+wuHE5mHKCQ4Im4/Kw8RYGB8CNpr1Cfal3jc\n7eTI8aWDAgMBAAECggEACg3D3bZZD5GqZwvxIN5khvc5ODPOnI3SkeCfzpeJew/k\nhguB+DEfIU7SLebpty8qB23nLSWMmp8enDCV7x/3ZOR+ThAc062s1/8t7FoFOhVV\n3fH69ydRboJYPQNlGpVdMLDGBXbZupsZO02E0GS5n0P7MaWHYbZu111BXClNCLU4\nY5uVaU6wLkwHnZZIO054Q1/l4RBMdQGdz81wqMUJFkRaAac/QDt+AAtHcRGHAKgh\nEIcoUUotNcLntusWuOCXpm2xs+u96Ji9lphA2uSffCQ6ThSAsDfMQRNmmRHrmL7S\njO33V8FXIz9FEe6Kn2Hwc8dX3qJ/vcsatDfnn11yKQKBgQDqqI6gTcabyzO1Gqbu\nKusWO7XqC/viidZGHp0D6ipbkbNy6CNUADxyqcIGgdhaU4eZgzbBzQWP3ef6fPUt\nrNrrOuRNX3AaAu++7uSNcJM0tAvLGxyOvj/qO+TVKozsJt2PCnHwBWCFs+aZK2kq\nVKC9pqqSUBcdbvJE+hPnYiNSOwKBgQC2AJ9wcsUyNCh74wXRI6cIzCj2vCdaec7s\n2TEa4N+izPrDVmunfr86xHOQ2cwimEcMk7eYVNngZUqpXppzAOt+iaNbcdmB9VrR\n+6g23CmmM+dr9SCmZ+/gRmBZ6sINCmQ/q8DawSkEBDDsG2YTJvMMNsVl5NA8Jky5\nz/MunRY9WQKBgQC1ICoG/kGhG3XsAoh7KdGPtcMyxtFECRTFxvd3gBX13D7hIOG0\nAwKllvbWwv7Wqcbu7WMksDXs2GIo7K7q9JN+IlT6jAIhccbQX+E2c4CMm7TGr0SZ\nwavgBx8YkuF3noBB2tQbamsYiMYj0Gg6blwsRys+CGfvJiYGq+kVHqEY5QKBgAmc\njM7+cKWPFZg9TABYdqjDR2KIWzeu+RuO+MXnnEfXtWJ9fN/ylJzA5S2AIwSssAvc\n/TQhPwRXtRKuuU9bfBRJpoPcxlTTpUEznhWPmO97DDyqTFgdYxCgBtSYzjisFNE7\n+8pRqx3YLtE5PTHDu9AoUFJqPAkBKMojTj9m8la5AoGBAJRkR/bOJ2aZWH3znBkr\n+WstgMcOQQXyr1u5Ob57tRBvawtbBZngOod6+vZKs8O+WQfxGJQjdj1jDcno1ZqD\noCRw8uwuR+y8+0E/vE6+GJ0lkzmeH+MOf/tlGi2bYoLG8DPRkxMY58/lVb5vjmqi\ntYLDl5rxtUA57qLEUGHOwfs6\n-----END PRIVATE KEY-----\n",
+  "client_email": "cloud-translation-api@mr-fap-naainy.iam.gserviceaccount.com",
+  "client_id": "102071526243342983622",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/cloud-translation-api%40mr-fap-naainy.iam.gserviceaccount.com"
+}
