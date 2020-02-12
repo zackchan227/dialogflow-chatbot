@@ -79,6 +79,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
         title: "Que-voulez vous faire?",
         reply: "TCF Question"
     })
+    quickReplies2F.addReply_("Contacte l'admin");
     quickReplies2F.addReply_("Mon niveau");
     quickReplies2F.addReply_("Expressions Idiomatiques");
     quickReplies2F.addReply_("Traduction");
@@ -503,8 +504,45 @@ exports.chatBot = functions.https.onRequest((request, response) => {
                 }
             admin.database().ref('contactez-Nous').child(`${user_id}/${position}/Question`).set(question); 
             agent.add(`Votre question a été envoyée. Nous répondrons à votre question dans les plus brefs délais. N'oubliez pas votre numéro de question pour voir notre réponse.`);
-            agent.add(`Votre numero de question: ${position}`); 
+            agent.add(`Votre numero de question: ${position}`);
+            const quickRepliesQuestionU = new Suggestion({
+                title: `Que voulez-vous faire ensuite?`,
+                reply: "Nouvelle question"
+            });
+            quickRepliesQuestionU.addReply_("Annuler");
+            agent.add(quickRepliesQuestionU); 
         });    
+    }
+
+    function contactezNousStation(agent){
+        var responsePret = false;
+        var nombre=0;
+        var j;
+        var quickRepliesQStation;
+        return admin.database().ref('contactez-Nous').once(`value`).then((snapshot)=>{
+            agent.add("C'est votre station Q&R où vous pouvez demander à notre mentor votre problème.")
+            for(j = 0; j < 100; j++)
+                if(snapshot.child(`${user_id}/${j}/R`).val() !== null) {
+                    responsePret = true;
+                    nombre++;
+                }
+            if(responsePret === true) {
+                quickRepliesQStation = new Suggestion({
+                    title: `Il y a "${nombre}" de vos questions auxquelles nous avons répondu`,
+                    reply: "Nouvelle question"
+                });
+                quickRepliesQStation.addReply_("Mes questions");
+                quickRepliesQStation.addReply_("Annuler");
+            }
+            else {
+                quickRepliesQStation = new Suggestion({
+                    title: `Nous n'avons répondu à aucune de vos questions. Voulez-vous poser une question?`,
+                    reply: "Nouvelle question"
+                });
+                quickRepliesQStation.addReply_("Annuler");
+            }
+            agent.add(quickRepliesQStation);
+        }); 
     }
 
     function questionStation(agent) {
@@ -527,7 +565,12 @@ exports.chatBot = functions.https.onRequest((request, response) => {
                         quickRepliesQuestionU.addReply_(`${i}`);
                 agent.add(quickRepliesQuestionU);
             } else {
-                agent.add("Désolé, vous n'avez aucune réponse de notre part");
+                const quickRepliesQuestionU = new Suggestion({
+                    title: `Désolé, vous n'avez aucune réponse de notre part`,
+                    reply: "Nouvelle question"
+                });
+                quickRepliesQuestionU.addReply_("Annuler");
+                agent.add(quickRepliesQuestionU);
             }
         });   
     }
@@ -548,6 +591,13 @@ exports.chatBot = functions.https.onRequest((request, response) => {
             .catch(function(error) {
                 console.log("Remove failed: " + error.message)
             });
+            const quickRepliesQuestionU = new Suggestion({
+                title: `Que voulez-vous faire ensuite?`,
+                reply: "Nouvelle question"
+            });
+            quickRepliesQuestionU.addReply_("Autres Réponses");
+            quickRepliesQuestionU.addReply_("Annuler");
+            agent.add(quickRepliesQuestionU);
         });
     }
 
@@ -1300,6 +1350,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     intentMap.set('Definition', defineWord);
     intentMap.set('Resultat', regarderNiveau);
     intentMap.set('TCFNotification', TCFStation);
+    intentMap.set('contactezNousStation', contactezNousStation);
     intentMap.set('contactNous', contactNous);
     intentMap.set('utilisateurquestionStation', questionStation);
     intentMap.set('regarderResponses', regarderResponses);
