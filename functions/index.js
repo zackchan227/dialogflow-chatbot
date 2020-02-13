@@ -23,6 +23,8 @@ const projectId = 'mr-fap-naainy';
 const {Translate} = require('@google-cloud/translate').v2;
 //const welcomeFunction = require('./welcome');
 //const projectID = JSON.parse(process.env.FIREBASE_CONFIG).projectId;
+const welcomeTest = require('./welcome');
+const outilsStation = require('./Outils/outilsStation');
 
 const translate = new Translate({projectId});
 
@@ -82,14 +84,6 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     quickReplies2F.addReply_("Outils");
     quickReplies2F.addReply_("Divertissement");
     quickReplies2F.addReply_("Contacte l'admin");
-
-    const quickRepliesOutils = new Suggestion({
-        title: "Choisissez un outil pour vous aider à apprendre le français:",
-        reply: "Expressions Idiomatiques"
-    })
-    quickRepliesOutils.addReply_("Expressions Communes");
-    quickRepliesOutils.addReply_("Définition");
-    quickRepliesOutils.addReply_("Traduction");
 
     const quickRepliesDivertissement = new Suggestion({
         title: "Vous pouvez vous référer aux horoscopes, aux horoscopes chinois et au tarot pour prédire votre destin aujourd'hui.",
@@ -760,6 +754,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     // Obtenir l'identifiant utilisateur facebook
     // Cette variable doit être globale
     var user_id = agent.originalRequest.payload.data.sender.id;
+    exports.user_id = user_id;
 
     // Default welcome when start to the conversation
     function welcome(agent) {
@@ -836,10 +831,6 @@ exports.chatBot = functions.https.onRequest((request, response) => {
         agent.add(`Je suis désolé, pouvez-vous réessayer?`);
         // agent.add(`I didn't understand`);
         // agent.add(`I'm sorry, can you try again?`);
-    }
-
-    function outilsStation(agent) {
-          agent.add(quickRepliesOutils);
     }
     
     function divertissementStation(agent) {
