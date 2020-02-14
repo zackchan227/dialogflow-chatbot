@@ -7,36 +7,18 @@ const cheerio = require('cheerio');
 function randomInt(min, max) {
     return min + Math.floor((max - min) * Math.random());
 }
-const index = randomInt(0,22) + 1;
-const URL = `https://www.horoscope.com/fr/tarot/signification-de-la-carte-du-tarot.aspx?TarotCardSelectorID_numericalint=${index}`; // Crawl data from URL
-            const getPageContent = (uri) => {
-                const options = {
-                    uri,
-                    headers: {
-                    'User-Agent': 'Request-Promise'
-                    },
-                    transform: (body) => {
-                    return cheerio.load(body) // Parsing the html code
-                    }
-                }
-            
-                return rp(options) // return Promise
-            }
+var datetime = new Date();
+var hh = datetime.getHours();
+function checkDay(){
+    var day;
+    if(hh >= 0 && hh < 15){
+        day = 'demain';
+    }else day = 'aujourdhui'
+    return day;
+}
 
-            
-            // eslint-disable-next-line promise/catch-or-return
-            // eslint-disable-next-line consistent-return
-            return getPageContent(`${URL}`).then($ => {
-                //console.log($('div.view-content > ul').text())
-                var text = $('div.span-9.span-xs-12.col').text();
-                var text1 = '';
-                for(var i = 0; i < 1696; i++){
-                    
-                    if(i > 200 && text[i] === '\n'){
-                        break;
-                    }
-                    text1 += text[i];
-                }
-                console.log(`${index}`);
-                console.log( `${text1}`);
-            });
+
+var dd = datetime.getDate();
+var mm = datetime.getMonth()+1;
+var day = checkDay();
+console.log(day);

@@ -832,11 +832,11 @@ exports.chatBot = functions.https.onRequest((request, response) => {
         // agent.add(`I didn't understand`);
         // agent.add(`I'm sorry, can you try again?`);
     }
-    
-    function divertissementStation(agent) {
-        var datetime = new Date();
-        var dd = datetime.getDate();
-        var mm = datetime.getMonth()+1;
+    var datetime = new Date();
+    var hh = datetime.getHours();
+    var dd = datetime.getDate();
+    var mm = datetime.getMonth()+1;
+    function divertissementStation(agent) {     
         var mois;
         switch(mm){
             case 1:
@@ -883,6 +883,14 @@ exports.chatBot = functions.https.onRequest((request, response) => {
         agent.add(quickRepliesDivertissement);
     }
 
+    function checkDay(){
+        var day;
+        if(hh >= 0 && hh < 15){
+            day = 'demain';
+        }else day = 'aujourdhui'
+        return day;
+    }
+
     function contentHoroscopes(agent){
         agent.add(quickRepliesHoroscopes);
     }
@@ -893,6 +901,8 @@ exports.chatBot = functions.https.onRequest((request, response) => {
         var horos = ['Bélier', 'Taureau', 'Gémeaux','Cancer','Lion', 'Viegre', 'Balance', 'Scorpion','Sagittaire', 'Capricorne','Verseau','Poissons'];
         var check = false;
         var index;
+        var day = checkDay();
+
         for(var i = 0; i < 12; i++){
             if(sign === horos[i]){
                 check = true;
@@ -908,7 +918,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
         }
 
         if(check === true){
-            const URL = `https://www.horoscope.com/fr/horoscopes/general/horoscope-general-du-jour-aujourdhui.aspx?signe=${index}`; // Crawl data from URL
+            const URL = `https://www.horoscope.com/fr/horoscopes/general/horoscope-general-du-jour-${day}.aspx?signe=${index}`; // Crawl data from URL
             const getPageContent = (uri) => {
                 const options = {
                     uri,
@@ -954,6 +964,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
         var horos = ['🐭', '🐮', '🐯','🐰','🐉', '🐍', '🐴', '🐐','🐵', '🐤','🐶','🐷'];
         var check = false;
         var index;
+        var day = checkDay();
 
         if(isNaN(sign)){
             for(var i = 0; i < 12; i++){
@@ -1076,7 +1087,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
         }
 
         if(check === true){
-            const URL = `https://www.horoscope.com/fr/horoscopes/chinois/horoscope-chinois-du-jour-aujourdhui.aspx?signe=${index}`; // Crawl data from URL
+            const URL = `https://www.horoscope.com/fr/horoscopes/chinois/horoscope-chinois-du-jour-${day}.aspx?signe=${index}`; // Crawl data from URL
             const getPageContent = (uri) => {
                 const options = {
                     uri,
