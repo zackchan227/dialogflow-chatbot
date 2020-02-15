@@ -896,10 +896,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
 
     function checkDay(){
         var day;
-        if(hh >= 0 && hh < 15){
-            day = 'demain';
-        }else day = 'aujourdhui'
-        return day;
+        return  day = (hh >= 0 && hh <= 14) ? 'demain' :  'aujourdhui';
     }
 
     function contentHoroscopes(agent){
@@ -1206,7 +1203,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     }
 
     // Define the word
-    function defineWord(agent){
+    function defineWords(agent){
         var word = agent.parameters['word'];
         //var ran = Math.floor((10) * Math.random());
         // var options = {
@@ -1277,7 +1274,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
                 text2 += text1[j];
                 text2 += '\n';
             }
-            
+
             //console.log(`${text2}`);
             agent.add(`Définition de ${word}:`);
             agent.add(`Il y a ${text1.length-1} significations`)
@@ -1293,7 +1290,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     function defineSynonyms(agent){
         var word = agent.parameters['word'];
 
-        const URL = `http://www.synonymo.fr/syno/${word}`; // Crawl data from URL
+        const URL = `https://crisco2.unicaen.fr/des/synonymes/${word}`; // Crawl data from URL
         const getPageContent = (uri) => {
             const options = {
                 uri,
@@ -1313,16 +1310,16 @@ exports.chatBot = functions.https.onRequest((request, response) => {
         // eslint-disable-next-line consistent-return
         return getPageContent(`${URL}`).then($ => {
             var flag = true;
-            var i = 1;
-            var mot = $('div.fiche > h1').text();
+            var i = 2;
+            var mot = `Synonymes de ${word}`;
             var sym; 
             var sym1 = [];
             var sym2 = '';
            
             //console.log(mot);
             while(flag){
-                sym = $(`div.fiche > ul.synos > li:nth-child(${i})`).text();
-                sym1[i-1] = sym;                
+                sym = $(`#synonymes > a:nth-child(${i})`).text();
+                sym1[i-2] = sym;                
                 if(sym){
                     i++;    
                 }else flag = false;
@@ -1331,7 +1328,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
             //console.log(sym1.length);
             for(var j = 0; j < sym1.length-1; j++){
                 sym1[j] = sym1[j].trim();
-                sym2 += `[${j+1}]`;
+                sym2 += `[${j+1}] `;
                 sym2 += sym1[j];
                 sym2 += '  ';
             }
@@ -1347,7 +1344,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     function defineAntonyms(agent){
         var word = agent.parameters['word'];
 
-        const URL = `http://www.antonyme.org/anto/${word}`; // Crawl data from URL
+        const URL = `https://crisco2.unicaen.fr/des/synonymes/${word}`; // Crawl data from URL
         const getPageContent = (uri) => {
             const options = {
                 uri,
@@ -1367,33 +1364,45 @@ exports.chatBot = functions.https.onRequest((request, response) => {
         // eslint-disable-next-line consistent-return
         return getPageContent(`${URL}`).then($ => {
             var flag = true;
-            var i = 1;
-            var mot = $('div.fiche > h1').text();
-            var sym; 
-            var sym1 = [];
-            var sym2 = '';
+            var i,index;
+            var mot = `Antonymes de ${word}`;
+            var an,sym,sym1,syms,a; 
+            var an1 = [];
+            var an2 = '';
             
-            //console.log(mot);
+            // eslint-disable-next-line no-empty
+            for(index = 2; index < 200; index++){
+                sym = $(`#synonymes > a:nth-child(${index})`).text();
+                sym1 = $(`#synonymes > div:nth-child(${index}) > i`).text();
+                a = parseInt(sym1);
+                if(!isNaN(a)) {
+                    i = index+1;
+                    syms = i-1;
+                    break;
+                }
+                
+            }
+
             while(flag){
-                sym = $(`div.fiche > ul.synos > li:nth-child(${i})`).text();
-                sym1[i-1] = sym;                
-                if(sym){
+                an = $(`#synonymes > a:nth-child(${i})`).text();
+                an1[i-syms-1] = an;                
+                if(an){
                     i++;    
                 }else flag = false;
             }
            
-            //console.log(sym1.length);
-            for(var j = 0; j < sym1.length-1; j++){
-                sym1[j] = sym1[j].trim();
-                sym2 += `[${j+1}]`;
-                sym2 += sym1[j];
-                sym2 += '  ';
+            //console.log(an1.length);
+            for(var j = 0; j < an1.length-1; j++){
+                an1[j] = an1[j].trim();
+                an2 += `[${j+1}] `;
+                an2 += an1[j];
+                an2 += '  ';
             }
 
             agent.add(`${mot}`);
-            agent.add(`Il y a ${sym1.length-1} antonymes`);
-            agent.add(`${sym2}`);
-           //console.log(sym2);
+            agent.add(`Il y a ${an1.length-1} antonymes`);
+            agent.add(`${an2}`);
+           //console.log(an2);
         });
     }
 
@@ -1573,9 +1582,12 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     intentMap.set('Tarots', tarots);
     //intentMap.set('Tarot - custom', tarots);
     intentMap.set('Definition', handleDefinition);
-    intentMap.set('Words', defineWord);
+    intentMap.set('Words', defineWords);
+    intentMap.set('Words - custom', defineWords);
     intentMap.set('Synonyms', defineSynonyms);
+    intentMap.set('Synonyms - custom', defineSynonyms);
     intentMap.set('Antonyms', defineAntonyms);
+    intentMap.set('Antonyms - custom', defineAntonyms);
     intentMap.set('Resultat', regarderNiveau);
     intentMap.set('TCFNotification', TCFStation);
     intentMap.set('contactezNousStation', contactezNousStation);
