@@ -132,6 +132,14 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     })
     quickReplies4A.addReply_("Annuler");
 
+    //Quick Reply Definition
+    const quickRepliesDefinition = new Suggestion({
+        title: "Il y a trois fonctions pour votre choix :",
+        reply: "Définir un mot"
+    })
+    quickRepliesDefinition.addReply_("Définir des synonymes");
+    quickRepliesDefinition.addReply_("Définir des antonymes");
+    // Quick Reply Horoscopes
     const quickRepliesHoroscopes = new Suggestion({
         title: "Choisissez votre signe",
         reply: "Bélier"
@@ -148,6 +156,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     quickRepliesHoroscopes.addReply_("Verseau");
     quickRepliesHoroscopes.addReply_("Poissons");
 
+    // Quick Reply Horoscopes China
     const quickRepliesHoroscopesChinois = new Suggestion({
         title: "Choisissez votre signe ou donne moi votre année de naissance",
         reply: "🐭"
@@ -402,7 +411,9 @@ exports.chatBot = functions.https.onRequest((request, response) => {
             }
 
             // Calculer le score du joueur
-            if(ans === 'je ne sais pas' || ans === 'Je ne sais pas'){
+            if(ans === 'je ne sais pas' || ans === 'Je ne sais pas' || ans === 'sais pas' 
+            || ans === 'idk' || ans === 'dont know' || ans === `don't know` || ans === 'who knows' 
+            || ans === 'không biết' || ans === 'đéo biết'){
                 agent.add(`Essayez d'y répondre, ne vous inquiétez pas de l'échec 🤗`);
             }
             else if(check === true){
@@ -1189,6 +1200,12 @@ exports.chatBot = functions.https.onRequest((request, response) => {
         }
     }
 
+    // Handle content of definition
+    function handleDefinition(agent){
+        agent.add(quickRepliesDefinition);
+    }
+
+    // Define the word
     function defineWord(agent){
         var word = agent.parameters['word'];
         //var ran = Math.floor((10) * Math.random());
@@ -1241,6 +1258,108 @@ exports.chatBot = functions.https.onRequest((request, response) => {
             }));
             agent.add(quickReplies2F);
         })
+    }
+
+    // Define the synonyms of word
+    function defineSynonyms(agent){
+        var word = agent.parameters['word'];
+
+        const URL = `http://www.synonymo.fr/syno/${word}`; // Crawl data from URL
+        const getPageContent = (uri) => {
+            const options = {
+                uri,
+                headers: {
+                'User-Agent': 'Request-Promise'
+                },
+                transform: (body) => {
+                return cheerio.load(body) // Parsing the html code
+                }
+             }
+            
+            return rp(options) // return Promise
+        }
+
+            
+        // eslint-disable-next-line promise/catch-or-return
+        // eslint-disable-next-line consistent-return
+        return getPageContent(`${URL}`).then($ => {
+            var flag = true;
+            var i = 1;
+            var mot = $('div.fiche > h1').text();
+            var sym; 
+            var sym1 = [];
+            var sym2 = '';
+            agent.add(`${mot}`);
+            //console.log(mot);
+            while(flag){
+                sym = $(`div.fiche > ul.synos > li:nth-child(${i})`).text();
+                sym1[i-1] = sym;                
+                if(sym){
+                    i++;    
+                }else flag = false;
+            }
+            agent.add(`Il y a ${sym1.length-1} synonymes`);
+            //console.log(sym1.length);
+            for(var j = 0; j < sym1.length-1; j++){
+                sym1[j] = sym1[j].trim();
+                sym2 += `[${j+1}]`;
+                sym2 += sym1[j];
+                sym2 += '  ';
+            }
+            agent.add(`${sym2}`);
+           //console.log(sym2);
+        });
+    }
+
+    // Define the antonyms of word
+    function defineAntonyms(agent){
+        var word = agent.parameters['word'];
+
+        const URL = `http://www.antonyme.org/anto/${word}`; // Crawl data from URL
+        const getPageContent = (uri) => {
+            const options = {
+                uri,
+                headers: {
+                'User-Agent': 'Request-Promise'
+                },
+                transform: (body) => {
+                return cheerio.load(body) // Parsing the html code
+                }
+             }
+            
+            return rp(options) // return Promise
+        }
+
+            
+        // eslint-disable-next-line promise/catch-or-return
+        // eslint-disable-next-line consistent-return
+        return getPageContent(`${URL}`).then($ => {
+            var flag = true;
+            var i = 1;
+            var mot = $('div.fiche > h1').text();
+            var sym; 
+            var sym1 = [];
+            var sym2 = '';
+            agent.add(`${mot}`);
+            //console.log(mot);
+            while(flag){
+                sym = $(`div.fiche > ul.synos > li:nth-child(${i})`).text();
+                sym1[i-1] = sym;                
+                if(sym){
+                    i++;    
+                }else flag = false;
+            }
+            agent.add(`Il y a ${sym1.length-1} antonymes`);
+            //console.log(sym1.length);
+            for(var j = 0; j < sym1.length-1; j++){
+                sym1[j] = sym1[j].trim();
+                sym2 += `[${j+1}]`;
+                sym2 += sym1[j];
+                sym2 += '  ';
+            }
+            agent.add(`${sym2}`);
+           //console.log(sym2);
+        });
     }
 
     function regarderNiveau(agent){
@@ -1418,7 +1537,10 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     intentMap.set('Horoscopes China - custom', horoscopesChinois);
     intentMap.set('Tarots', tarots);
     //intentMap.set('Tarot - custom', tarots);
-    intentMap.set('Definition', defineWord);
+    intentMap.set('Definition', handleDefinition);
+    intentMap.set('Words', defineWord);
+    intentMap.set('Synonyms', defineSynonyms);
+    intentMap.set('Antonyms', defineAntonyms);
     intentMap.set('Resultat', regarderNiveau);
     intentMap.set('TCFNotification', TCFStation);
     intentMap.set('contactezNousStation', contactezNousStation);
