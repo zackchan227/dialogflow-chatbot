@@ -11,7 +11,7 @@ function randomInt(min, max) {
 
 var word = 'trouver';
 
-const URL = `http://www.antonyme.org/anto/${word}`; // Crawl data from URL
+const URL = `https://www.le-dictionnaire.com/definition/${word}`; // Crawl data from URL
         const getPageContent = (uri) => {
             const options = {
                 uri,
@@ -31,46 +31,40 @@ const URL = `http://www.antonyme.org/anto/${word}`; // Crawl data from URL
         // eslint-disable-next-line consistent-return
         return getPageContent(`${URL}`).then($ => {
             //console.log($('div.view-content > ul').text())
+            console.log(`Définition ${word}: `);
+            var text;
+            var i = 2,j = 1, k = 0;
             var flag = true;
-            var i = 1;
-            var mot = $('div.fiche > h1').text();
-            var sym; 
-            var sym1 = [];
-            var sym2 = '';
-            console.log(mot);
+            var mot = $('div.defbox > span').text();
+            var text1 = [];
+            var text2 = '';
             while(flag){
-                sym = $(`div.fiche > ul.synos > li:nth-child(${i})`).text();
-                sym1[i-1] = sym;
-                //sym1[i-1] = sym1[i-1].replace('\n','');
-                //sym1[i-1] = sym1[i-1].replace('\n','');
-                
-                //console.log(sym);
-                
-                if(sym){
-                    i++;    
+                text = $(`div.defbox > ul:nth-child(${i}) > li:nth-child(${j})`).text();
+                //console.log(`${text}`);
+                console.log(text);
+                text1[k] = text;       
+                k++; 
+                if(text){
+                    j++;
+                    text = $(`div.defbox > ul:nth-child(${i}) > li:nth-child(${j})`).text();
+                    if(!text){
+                        i++;
+                        j = 1;
+                    }
                 }else flag = false;
             }
-            console.log(`There are ${sym1.length-1} syms`);
-            for(var j = 0; j < sym1.length-1; j++){
-                sym1[j] = sym1[j].trim();
-                sym2 += `[${j+1}]`;
-                sym2 += sym1[j];
-                sym2 += '  ';
-                //console.log(sym1[j]);
-            }
-           //console.log(sym1);
-           console.log(sym2);
+            console.log(text1.length-1);
             
-            // for(var j = 1; j <= count; j++){
-            //     sym = $(`div.fiche > ul.synos > li:nth-child(${j})`).text();
-            //     // if(sym === ' '){
-            //     //     continue;
-            //     // }
-            //     //sym1 += sym[j];
-            //     //console.log(sym1[i]);
-            // }
-            //agent.add(`Définition ${word}: `);
+            for(j = 0; j < text1.length-1; j++){
+               
+                text1[j] = text1[j].trim();
+                //console.log(text1);
+                text2 += `[${j+1}] `;
+                text2 += text1[j];
+                text2 += '\n';
+            }
+            console.log(`${text2}`);
             // eslint-disable-next-line prefer-arrow-callback
-           
-            //console.log(sym);
-        });
+            
+            
+        })

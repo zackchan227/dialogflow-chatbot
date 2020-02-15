@@ -1245,18 +1245,47 @@ exports.chatBot = functions.https.onRequest((request, response) => {
         // eslint-disable-next-line consistent-return
         return getPageContent(`${URL}`).then($ => {
             //console.log($('div.view-content > ul').text())
-            var text = $('div.defbox > ul').text();
+            //console.log(`Définition ${word}: `);
+            var text;
+            var i = 2,j = 1, k = 0;
+            var flag = true;
             var mot = $('div.defbox > span').text();
-            agent.add(`Définition ${word}: `);
-            // eslint-disable-next-line prefer-arrow-callback
-            agent.add(align(text, function (len, max, line, lines) {
-                return {
-                    indent: Math.floor((max - len) / 2), 
-                    character: '-', 
-                    prefix: ' 👍 '
-                };
-            }));
+            var text1 = [];
+            var text2 = '';
+            while(flag){
+                text = $(`div.defbox > ul:nth-child(${i}) > li:nth-child(${j})`).text();
+                //console.log(`${text}`);
+                //console.log(text);
+                text1[k] = text;       
+                k++; 
+                if(text){
+                    j++;
+                    text = $(`div.defbox > ul:nth-child(${i}) > li:nth-child(${j})`).text();
+                    if(!text){
+                        i++;
+                        j = 1;
+                    }
+                }else flag = false;
+            }
+            //console.log(text1.length-1);
+            
+            for(j = 0; j < text1.length-1; j++){
+               
+                text1[j] = text1[j].trim();
+                //console.log(text1);
+                text2 += `[${j+1}] `;
+                text2 += text1[j];
+                text2 += '\n';
+            }
+            
+            //console.log(`${text2}`);
+            agent.add(`Définition de ${word}:`);
+            agent.add(`Il y a ${text1.length-1} significations`)
+            agent.add(`${text2}`);
             agent.add(quickReplies2F);
+            // eslint-disable-next-line prefer-arrow-callback
+            
+            
         })
     }
 
@@ -1289,7 +1318,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
             var sym; 
             var sym1 = [];
             var sym2 = '';
-            agent.add(`${mot}`);
+           
             //console.log(mot);
             while(flag){
                 sym = $(`div.fiche > ul.synos > li:nth-child(${i})`).text();
@@ -1298,7 +1327,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
                     i++;    
                 }else flag = false;
             }
-            agent.add(`Il y a ${sym1.length-1} synonymes`);
+            
             //console.log(sym1.length);
             for(var j = 0; j < sym1.length-1; j++){
                 sym1[j] = sym1[j].trim();
@@ -1306,6 +1335,9 @@ exports.chatBot = functions.https.onRequest((request, response) => {
                 sym2 += sym1[j];
                 sym2 += '  ';
             }
+
+            agent.add(`${mot}`);
+            agent.add(`Il y a ${sym1.length-1} synonymes`);
             agent.add(`${sym2}`);
            //console.log(sym2);
         });
@@ -1340,7 +1372,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
             var sym; 
             var sym1 = [];
             var sym2 = '';
-            agent.add(`${mot}`);
+            
             //console.log(mot);
             while(flag){
                 sym = $(`div.fiche > ul.synos > li:nth-child(${i})`).text();
@@ -1349,7 +1381,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
                     i++;    
                 }else flag = false;
             }
-            agent.add(`Il y a ${sym1.length-1} antonymes`);
+           
             //console.log(sym1.length);
             for(var j = 0; j < sym1.length-1; j++){
                 sym1[j] = sym1[j].trim();
@@ -1357,6 +1389,9 @@ exports.chatBot = functions.https.onRequest((request, response) => {
                 sym2 += sym1[j];
                 sym2 += '  ';
             }
+
+            agent.add(`${mot}`);
+            agent.add(`Il y a ${sym1.length-1} antonymes`);
             agent.add(`${sym2}`);
            //console.log(sym2);
         });
