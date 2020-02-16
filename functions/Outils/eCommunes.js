@@ -1,3 +1,4 @@
+/* eslint-disable prefer-arrow-callback */
 const variables = require('../variables');
 
 function randomInt(min, max) {

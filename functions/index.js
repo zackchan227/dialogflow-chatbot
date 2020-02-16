@@ -28,12 +28,6 @@ const translate = new Translate({projectId});
 const {WebhookClient} = require('dialogflow-fulfillment');
 const {Card, Suggestion} = require('dialogflow-fulfillment');
 
-const serviceAccount = require("./mr-fap-naainy-firebase-adminsdk-d55vb-67d7b85f0b.json");
-admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-    databaseURL: `https://mr-fap-naainy.firebaseio.com/`
-});
-
 // const serviceAccount = require("./mr-fap-naainy-firebase-adminsdk-d55vb-67d7b85f0b.json");
 // admin.initializeApp({
 //     credential: admin.credential.cert(serviceAccount),
