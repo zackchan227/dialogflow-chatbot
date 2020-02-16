@@ -5,30 +5,20 @@
 // for Dialogflow fulfillment library docs, samples, and to report issues
 'use strict';
 
-
-
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
-//const axios = require('axios');
-//const request = require('request-promise');
-//const FB = require('fb');
 const Facebook = require('facebook-node-sdk');
 const request = require('request');
 const cheerio = require('cheerio');
 const rp = require('request-promise-native');
 const align = require('align-text');
 const esrever = require('esrever');
-//const {google} = require('googleapis');
 const projectId = 'mr-fap-naainy';
 const {Translate} = require('@google-cloud/translate').v2;
-//const welcomeFunction = require('./welcome');
-//const projectID = JSON.parse(process.env.FIREBASE_CONFIG).projectId;
 const welcomeTest = require('./welcome');
 const outilsStation = require('./Outils/outilsStation');
 
 const translate = new Translate({projectId});
-
-
 const {WebhookClient} = require('dialogflow-fulfillment');
 const {Card, Suggestion} = require('dialogflow-fulfillment');
 const serviceAccount = require("./mr-fap-naainy-firebase-adminsdk-d55vb-67d7b85f0b.json");
@@ -36,9 +26,7 @@ admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
     databaseURL: `https://mr-fap-naainy.firebaseio.com/`
 });
-
 const ref = admin.database().ref(`data`);
-var facebook = new Facebook({ appID: '223520468643619', secret: 'nothing' });
 
 process.env.DEBUG = 'dialogflow:debug'; // enables lib debugging statements
  
@@ -51,6 +39,12 @@ exports.chatBot = functions.https.onRequest((request, response) => {
         return min + Math.floor((max - min) * Math.random());
     }
     
+    //Quick Reply
+    const quickReplies = new Suggestion({
+        title: "Que voulez-vous faire après?",
+        reply: "Annuler"
+    })
+
     //Quick Reply
     const quickRepliesF = new Suggestion({
         title: "Que voulez-vous faire après?",
@@ -355,7 +349,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
                 agent.add(`[${ID+1}] - ${question}`);
 
                 const quickReplies1 = new Suggestion({
-                    title: "Choisissez une réponse",
+                    title: "Choisissez une bonne réponse",
                     reply: `${answer0}`
                 })
                 quickReplies1.addReply_(`${answer1}`);
@@ -844,7 +838,6 @@ exports.chatBot = functions.https.onRequest((request, response) => {
         // agent.add(`I'm sorry, can you try again?`);
     }
     var datetime = new Date();
-    var hh = datetime.getHours();
     var dd = datetime.getDate();
     var mm = datetime.getMonth()+1;
     function divertissementStation(agent) {     
@@ -894,22 +887,24 @@ exports.chatBot = functions.https.onRequest((request, response) => {
         agent.add(quickRepliesDivertissement);
     }
 
-    function checkDay(){
-        var day;
-        return  day = (hh >= 0 && hh <= 14) ? 'demain' :  'aujourdhui';
+    // check hour to correct the day
+    function checkDay(hours){
+        return  (hours >= 0 && hours <= 14) ? 'aujourdhui' : 'demain';
     }
 
+    // handle horoscopes
     function contentHoroscopes(agent){
         agent.add(quickRepliesHoroscopes);
     }
     // eslint-disable-next-line consistent-return
-    // 
+    // crawl horoscope's data from horoscope.com
     function horoscopes(agent){
         var sign = agent.parameters['horoscope'];
         var horos = ['Bélier', 'Taureau', 'Gémeaux','Cancer','Lion', 'Viegre', 'Balance', 'Scorpion','Sagittaire', 'Capricorne','Verseau','Poissons'];
         var check = false;
         var index;
-        var day = checkDay();
+        var hours = datetime.getHours();
+        var day = checkDay(hours);
 
         for(var i = 0; i < 12; i++){
             if(sign === horos[i]){
@@ -962,17 +957,19 @@ exports.chatBot = functions.https.onRequest((request, response) => {
         }
     }
 
+    // handle horoscopes chinois
     function contentHoroscopesChinois(agent){
         agent.add(quickRepliesHoroscopesChinois);
     }
     // eslint-disable-next-line consistent-return
-    // 
+    // crawl horoscopes chinois's data from horoscope.com
     function horoscopesChinois(agent){
         var sign = agent.parameters['HoroscopesChina'];
         var horos = ['🐭', '🐮', '🐯','🐰','🐉', '🐍', '🐴', '🐐','🐵', '🐤','🐶','🐷'];
         var check = false;
         var index;
-        var day = checkDay();
+        var hours = datetime.getHours();
+        var day = checkDay(hours);
 
         if(isNaN(sign)){
             for(var i = 0; i < 12; i++){
@@ -1131,34 +1128,23 @@ exports.chatBot = functions.https.onRequest((request, response) => {
         }
     }
 
-    function contentTarots(agent){
-        //agent.add(quickRepliesHoroscopes);
-    }
+    // handle tarots
+    // function contentTarots(agent){
+    //     //agent.add(quickRepliesHoroscopes);
+    // }
+    
     // eslint-disable-next-line consistent-return
-    // 
-    // eslint-disable-next-line consistent-return
+    // crawl tarots's data from horoscope.com
     function tarots(agent){
-        //var sign = agent.parameters['horoscope'];
         var check = false;
         var index = randomInt(0,22) + 1;
+
         if(index > 0 && index < 23)
-        {
             check = true;
-        }
-        // var horos = ['Bélier', 'Taureau', 'Gémeaux','Cancer','Lion', 'Viegre', 'Balance', 'Scorpion','Sagittaire', 'Capricorne','Verseau','Poissons'];
-        // var check = false;
-        // var index;
-        // for(var i = 0; i < 12; i++){
-        //     if(sign === horos[i]){
-        //         check = true;
-        //         index = i+1;
-        //         break;
-        //     }
-        // }
 
         if(check !== true){
             agent.add(`Il y a une erreur!`);
-            //agent.add(quickRepliesTest);
+            agent.add(quickReplies2F);
             return;
         }
 
@@ -1173,26 +1159,23 @@ exports.chatBot = functions.https.onRequest((request, response) => {
                     transform: (body) => {
                     return cheerio.load(body) // Parsing the html code
                     }
-                }
-            
+                }           
                 return rp(options) // return Promise
             }
-
-            
+          
             // eslint-disable-next-line promise/catch-or-return
             // eslint-disable-next-line consistent-return
             return getPageContent(`${URL}`).then($ => {
                 var text = $('div.span-9.span-xs-12.col').text();
                 var text1 = '';
-                for(var i = 0; i < 1696; i++){
-                    
+                for(var i = 0; i < 1696; i++){                  
                     if(i > 200 && text[i] === '\n'){
                         break;
                     }
                     text1 += text[i];
                 }
                 agent.add(`${text1}`);
-                //agent.add(quickReplies2F);
+                agent.add(quickReplies2F);
             })
         }
     }
@@ -1336,6 +1319,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
             agent.add(`${mot}`);
             agent.add(`Il y a ${sym1.length-1} synonymes`);
             agent.add(`${sym2}`);
+            agent.add(quickReplies);
            //console.log(sym2);
         });
     }
@@ -1371,7 +1355,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
             var an2 = '';
             
             // eslint-disable-next-line no-empty
-            for(index = 2; index < 200; index++){
+            for(index = 2; index < 696; index++){
                 sym = $(`#synonymes > a:nth-child(${index})`).text();
                 sym1 = $(`#synonymes > div:nth-child(${index}) > i`).text();
                 a = parseInt(sym1);
@@ -1402,6 +1386,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
             agent.add(`${mot}`);
             agent.add(`Il y a ${an1.length-1} antonymes`);
             agent.add(`${an2}`);
+            agent.add(quickReplies);
            //console.log(an2);
         });
     }
