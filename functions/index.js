@@ -5,8 +5,6 @@
 // for Dialogflow fulfillment library docs, samples, and to report issues
 'use strict';
 
-
-
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 //const axios = require('axios');
@@ -23,19 +21,29 @@ const projectId = 'mr-fap-naainy';
 const {Translate} = require('@google-cloud/translate').v2;
 //const welcomeFunction = require('./welcome');
 //const projectID = JSON.parse(process.env.FIREBASE_CONFIG).projectId;
-const welcomeTest = require('./welcome');
+const welcome = require('./welcome');
+
+// TCF plug-ins
+const TCFStation = require('./TCF/TCFStation');
+const regarderNiveau = require('./TCF/regarderNiveau');
+const questionsRandom = require('./TCF/questionsRandom');
+const questionsCheck = require('./TCF/questionsCheck');
+
+// Outils plug-ins
 const outilsStation = require('./Outils/outilsStation');
+const idiomes = require('./Outils/idiomes');
+const eCommunes = require('./Outils/eCommunes');
 
 const translate = new Translate({projectId});
 
 
 const {WebhookClient} = require('dialogflow-fulfillment');
 const {Card, Suggestion} = require('dialogflow-fulfillment');
-const serviceAccount = require("./mr-fap-naainy-firebase-adminsdk-d55vb-67d7b85f0b.json");
-admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-    databaseURL: `https://mr-fap-naainy.firebaseio.com/`
-});
+// const serviceAccount = require("./mr-fap-naainy-firebase-adminsdk-d55vb-67d7b85f0b.json");
+// admin.initializeApp({
+//     credential: admin.credential.cert(serviceAccount),
+//     databaseURL: `https://mr-fap-naainy.firebaseio.com/`
+// });
 
 const ref = admin.database().ref(`data`);
 var facebook = new Facebook({ appID: '223520468643619', secret: 'nothing' });
@@ -58,12 +66,6 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     })
     quickRepliesF.addReply_("Annuler");
 
-    const quickRepliesFF = new Suggestion({
-        title: "Que voulez-vous faire après?",
-        reply: "Un autre"
-    })
-    quickRepliesFF.addReply_("Annuler");
-
     const quickRepliesE = new Suggestion({
         title: "What do you want to do next?",
         reply: "Next"
@@ -76,40 +78,12 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     })
     quickRepliesV.addReply_("Đéo");
 
-    //Quick Reply 2
-    const quickReplies2F = new Suggestion({
-        title: "Que-voulez vous faire?",
-        reply: "TCF Question"
-    })
-    quickReplies2F.addReply_("Outils");
-    quickReplies2F.addReply_("Divertissement");
-    quickReplies2F.addReply_("Contacte l'admin");
-
     const quickRepliesDivertissement = new Suggestion({
         title: "Vous pouvez vous référer aux horoscopes, aux horoscopes chinois et au tarot pour prédire votre destin aujourd'hui.",
         reply: "Horoscopes"
     })
     quickRepliesDivertissement.addReply_("Horoscopes Chinois");
     quickRepliesDivertissement.addReply_("Tarot");
-
-    const quickReplies2E = new Suggestion({
-        title: "There are random question and talk for 4, what's your choice?",
-        reply: "Random Question"
-    })
-    quickReplies2E.addReply_("Talk for 4");
-
-    const quickRepliesTest = new Suggestion({
-        title: "There are 3 options, what's your choice?",
-        reply: "Random Question"
-    })
-    quickRepliesTest.addReply_("Talk for 4");
-    quickRepliesTest.addReply_("Horoscope");
-
-    const quickReplies2V = new Suggestion({
-        title: "Ấn vào nút bên trái để chơi lô đề, ấn vào nút bên phải để xem chân lý",
-        reply: "Chơi lô đề"
-    })
-    quickReplies2V.addReply_("Xem chân lý");
 
     //Quick Reply 3
     const quickReplies3F = new Suggestion({
@@ -125,12 +99,14 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     })
     quickReplies4.addReply_("Annuler");
 
-    //Quick Reply 4A
-    const quickReplies4A = new Suggestion({
-        title: "Voulez-vous améliorer votre niveau?",
-        reply: "Questions Aléatoires"
+    /////////////////////////////////////////////////////////
+    const quickReplies2F = new Suggestion({
+        title: "Que-voulez vous faire?",
+        reply: "TCF Question"
     })
-    quickReplies4A.addReply_("Annuler");
+    quickReplies2F.addReply_("Outils");
+    quickReplies2F.addReply_("Divertissement");
+    quickReplies2F.addReply_("Contacte l'admin");
 
     //Quick Reply Definition
     const quickRepliesDefinition = new Suggestion({
@@ -172,342 +148,6 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     quickRepliesHoroscopesChinois.addReply_("🐤");
     quickRepliesHoroscopesChinois.addReply_("🐶");
     quickRepliesHoroscopesChinois.addReply_("🐷");
-
-    // Station de gestion des questions TCF
-    function TCFStation(agent) {
-        return ref.once(`value`).then((snapshot)=>{
-            // Score du joueur
-            var score = snapshot.child(`scores/${user_id}`).val();
-
-            // Niveau du joueur
-            var niveau;
-
-            // Cette variable vérifie si le joueur a vérifié son niveau
-            var testDeNiveau = snapshot.child(`levelTest/${user_id}`).val();
-
-            // Nombre de questions complétées
-            var fini = 0;
-
-            // Cette variable vérifie si la question a été posée
-            var verQuestion;
-
-            if(score === null || testDeNiveau === 0) {
-                if(score === null)
-                    admin.database().ref('data/scores').child(`${user_id}`).set(0);
-                admin.database().ref('data/levelTest').child(`${user_id}`).set(0);
-                for(var i = 0; i< 10; i++){
-                    verQuestion = snapshot.child(`AskRandomQ/${user_id}/${i}`).val();
-                    if(verQuestion === "True") {
-                        fini++;   
-                    }
-                }
-                // Réponse rapide pour les premières questions
-                const quickRepliesFirstTime = new Suggestion({
-                    title: `C'est la première fois que vous utilisez cette application, vous devez passer un examen pour tester votre niveau. Fini: ${fini}/10`,
-                    reply: "On y va"
-                })
-                quickRepliesFirstTime.addReply_("Annuler");
-                agent.add(quickRepliesFirstTime);
-            } else {
-                if(score < 500)
-                    niveau = "A1";
-    
-                if(score >= 500 && score < 1000)
-                    niveau = "A2";
-    
-                if(score >=1000 && score < 1500)
-                    niveau = "B1";
-    
-                if(score >=1500 && score < 2000)
-                    niveau = "B2";
-    
-                if(score >=2000 && score < 2500)
-                    niveau = "C1";
-    
-                if(score >=2500 && score <= 3000)
-                    niveau = "C2";
-                
-                agent.add(`Votre niveau est: ${niveau}`);
-                agent.add(`Votre score est: ${score}`);
-                agent.add(quickReplies4A);
-        }
-    });
-    }
-
-    // Générer des questions aléatoires
-    function askRandom(agent)
-    {   
-        return ref.once(`value`).then((snapshot)=>{
-
-            // Nombre de questions (dans la base de données Firebase) 
-            // Lorsque vous modifiez le nombre de questions dans la base de données, 
-            // modifiez simplement cette variable, pas besoin d'modifiez le code.
-            var nombreDeQuestion = 4;
-
-            // Cette variable contient l'ID de la question
-            var ID;
-
-            // Score du joueur
-            var score = snapshot.child(`scores/${user_id}`).val();
-
-            // Cette variable vérifie si le joueur a vérifié son niveau
-            var testDeNiveau = snapshot.child(`levelTest/${user_id}`).val();
-
-            // Cette variable vérifie si la question a été posée
-            var verQuestion;
-
-            // Niveau du joueur
-            var niveau;
-
-            // Cette variable est médiée pour changer la question
-            var lvl;
-
-            // Cette variable identifie le joueur participant au paquet de questions initiales (questions) 
-            // ou au paquet de questions TCF (TCFquestions)
-            var nouvelOuPas="";
-
-            // Cette variable vérifie si le joueur a répondu à toutes les questions 
-            // du questionnaire au niveau du joueur
-            var sommeQuestion = 0;
-
-            // Cette variable contient l'ID de la question, prise en charge de la variable ID
-            var IDQuestion;
-
-            // Variables temporaires pour les boucles
-            var i,j;
-
-            // Vérifiez si un nouveau joueur
-            if(testDeNiveau === 0) {
-                // si oui
-                var fini = 0;
-                // Poser 10 questions de test de niveau...
-                for(i = 0; i< 10; i++){
-                    fini++;
-                    verQuestion = snapshot.child(`AskRandomQ/${user_id}/${i}`).val();
-                    if(verQuestion !== "True") {
-                        ID = i;
-                        break;     
-                    }
-                }
-                // Lorsque 10 questions sont terminées...
-                if(fini === 10) {
-                    admin.database().ref('data/levelTest').child(`${user_id}`).set(1);
-                    for(j = 0; j< 10; j++)
-                        admin.database().ref('data/AskRandomQ').child(`${user_id}/${j}`).set('False');   
-                }
-            } else {
-                // si non
-                    // Vérifier le niveau du joueur
-                    if(score < 500)
-                        niveau = "A1";
-                    else if(score >= 500 && score < 1000)
-                            niveau = "A2";
-                        else if(score >= 1000 && score < 1500)
-                                niveau = "B1";
-                            else if(score >= 1500 && score < 2000)
-                                    niveau = "B2";
-                                else if(score >= 2000 && score < 2500)
-                                        niveau = "C1";
-                                        else
-                                        niveau = "C2";
-                   
-                    // Ces 2 fonctions vérifient si le joueur a répondu à toutes les questions 
-                    // du questionnaire au niveau du joueur
-                    for(i = 0; i < nombreDeQuestion; i++) {
-                        lvl = snapshot.child(`TCFNiveauDesQuestions/${niveau}/${i}`).val();
-                        if(snapshot.child(`AskRandomQ/${user_id}/${lvl}`).val() === "True")
-                        sommeQuestion++; 
-                    }
-
-                    if(sommeQuestion === 3)
-                        for(j = 0; j < nombreDeQuestion; j++) {
-                            lvl = snapshot.child(`TCFNiveauDesQuestions/${niveau}/${j}`).val();
-                            if(snapshot.child(`AskRandomQ/${user_id}/${lvl}`).val() === "True")
-                                admin.database().ref('data/AskRandomQ').child(`${user_id}/${lvl}`).set('False');
-                        }
-                    
-                    // Question aléatoire
-                    IDQuestion = randomInt(0,nombreDeQuestion);
-                    lvl = snapshot.child(`TCFNiveauDesQuestions/${niveau}/${IDQuestion}`).val();
-                    verQuestion = snapshot.child(`AskRandomQ/${user_id}/${lvl}`).val();
-    
-                    // Vérifier si la question a été posée
-                    while(verQuestion === "True"){
-                        IDQuestion = randomInt(0,nombreDeQuestion);
-                        lvl = snapshot.child(`TCFNiveauDesQuestions/${niveau}/${IDQuestion}`).val();
-                        verQuestion = snapshot.child(`AskRandomQ/${user_id}/${lvl}`).val();
-                        // admin.database().ref('data/AskRandomQ').child(`${user_id}/${IDQuestion}`).set('False');
-                    }
-                    
-                    nouvelOuPas = "TCF";
-                    ID = snapshot.child(`TCFNiveauDesQuestions/${niveau}/${IDQuestion}`).val();
-                }
-
-            // Afficher la question
-            admin.database().ref('data/CurrentQuestion').child(`${user_id}`).set(ID);
-            var question = snapshot.child(`${nouvelOuPas}questions/${ID}`).val();
-            var answer0 = snapshot.child(`${nouvelOuPas}answers/${ID}/0`).val();
-            var answer1 = snapshot.child(`${nouvelOuPas}answers/${ID}/1`).val();
-            var answer2 = snapshot.child(`${nouvelOuPas}answers/${ID}/2`).val();
-            var answer3 = snapshot.child(`${nouvelOuPas}answers/${ID}/3`).val();
-            // eslint-disable-next-line promise/always-return
-            if(question !== null) {
-                agent.add(`[${ID+1}] - ${question}`);
-
-                const quickReplies1 = new Suggestion({
-                    title: "Choisissez une réponse",
-                    reply: `${answer0}`
-                })
-                quickReplies1.addReply_(`${answer1}`);
-                quickReplies1.addReply_(`${answer2}`);
-                quickReplies1.addReply_(`${answer3}`);
-        
-                agent.add(quickReplies1);
-
-                admin.database().ref('data/AskRandomQ').child(`${user_id}/${ID}`).set('True');
-            }
-        });
-    }
-
-    // Vérification de la bonne réponse de l'utilisateur en 4 réponses
-    function checkAnswer(agent)
-    {
-        return ref.once(`value`).then((snapshot)=>{
-            // Cette variable identifie le joueur participant au paquet de questions initiales (questions) 
-            // ou au paquet de questions TCF (TCFquestions)
-            var nouvelOuPas;
-
-            // Cette variable vérifie si le joueur a vérifié son niveau
-            var testDeNiveau = snapshot.child(`levelTest/${user_id}`).val();
-            if(testDeNiveau === 0)
-                nouvelOuPas="";
-            else
-                nouvelOuPas="TCF";
-
-            // Réponse du joueur
-            var ans = agent.parameters['answer'];
-
-            // Question actuelle est posée
-            var currentQuestion = snapshot.child(`CurrentQuestion/${user_id}`).val();
-
-            // La bonne réponse à la question
-            var correctA = snapshot.child(`${nouvelOuPas}corrects/${currentQuestion}`).val();
-
-            // Explication de la bonne réponse
-            var explication = snapshot.child(`${nouvelOuPas}notes/${currentQuestion}`).val();
-
-            // Score du joueur
-            var score;
-
-            // Niveau du joueur
-            var niveau;
-
-            // Cette variable vérifie si la réponse du joueur est bonne ou fausse
-            var check = false;
-
-            // Vérifie si la réponse du joueur est bonne ou fausse
-            if(ans === correctA) {
-                check = true;
-            }
-
-            // Calculer le score du joueur
-            if(ans === 'je ne sais pas' || ans === 'Je ne sais pas' || ans === 'sais pas' 
-            || ans === 'idk' || ans === 'dont know' || ans === `don't know` || ans === 'who knows' 
-            || ans === 'không biết' || ans === 'đéo biết'){
-                agent.add(`Essayez d'y répondre, ne vous inquiétez pas de l'échec 🤗`);
-            }
-            else if(check === true){
-                agent.add(`⭕ C'est Correct :D`);    
-                agent.add(`${explication}`);
-                score = snapshot.child(`scores/${user_id}`).val();
-                if(testDeNiveau === 0) 
-                    switch(currentQuestion){ //x10 quand prêt
-                        case 0:
-                            score += 20;
-                            break;
-                        case 1:
-                            score += 20;
-                            break;
-                        case 2:
-                            score += 25;
-                            break;
-                        case 3:
-                            score += 25;
-                            break;
-                        case 4:
-                            score += 30;
-                            break;
-                        case 5:
-                            score += 30;
-                            break;
-                        case 6:
-                            score += 30;
-                            break;
-                        case 7:
-                            score += 35;
-                            break;
-                        case 8:
-                            score += 35;
-                            break;
-                        case 9:
-                            score += 35;
-                            break;
-                        default:
-                            score += 25;
-                            break;
-                    }
-                else
-                    score += 25;
-                admin.database().ref('data/scores').child(`${user_id}`).set(score);
-            }
-            //eslint-disable-next-line promise/always-return
-            else if(check !== true && explication !== null){ 
-                agent.add(`❌ Ce n'est pas correct :(`);              
-                agent.add(`La bonne réponse est: "${correctA}"`);    
-                agent.add(`Explication: ${explication}`);
-                score = snapshot.child(`scores/${user_id}`).val();
-                if(testDeNiveau === 2)
-                    score -= 25;
-                admin.database().ref('data/scores').child(`${user_id}`).set(score);                                                                                        
-            }       
-            else {
-                agent.add(`Pardon, il y a une erreur, réessayez!`);   
-            }
-
-            if(testDeNiveau === 1) {
-                if(score < 500)
-                    niveau = "🇦1️⃣";
-    
-                if(score >= 500 && score < 1000)
-                    niveau = "🇦2️⃣";
-    
-                if(score >=1000 && score < 1500)
-                    niveau = "🇧1️⃣";
-    
-                if(score >=1500 && score < 2000)
-                    niveau = "🇧2️⃣";
-    
-                if(score >=2000 && score < 2500)
-                    niveau = "🇨1️⃣";
-    
-                if(score >=2500 && score <= 3000)
-                    niveau = "🇨2️⃣";
-                
-                // Réponse rapide pour la fin du test de niveau
-                const quickRepliesFinish = new Suggestion({
-                    title: `Votre niveau est ${niveau} `,
-                    reply: "Annuler"
-                })
-                agent.add(`Vous avez terminé votre premier test de niveau.`);
-                agent.add(`Votre score est: ${score}`);
-                admin.database().ref('data/AskRandomQ').child(`${user_id}/9`).set('False');   
-                admin.database().ref('data/levelTest').child(`${user_id}`).set(2);
-                agent.add(quickRepliesFinish);
-            }
-            else
-                agent.add(quickReplies4);
-        });       
-    }
 
     function contactNous(agent) {
         const { question } = agent.parameters;
@@ -654,39 +294,6 @@ exports.chatBot = functions.https.onRequest((request, response) => {
         });
     }
 
-    // Function is made 4 for
-    function talk4For(agent)
-    {
-        return ref.child("idioms").once("value", function(snapshot) {
-            var max = snapshot.numChildren();
-            var ran = randomInt(0,max);
-            var idiom =  snapshot.child(`${ran}`).val();
-            if(idiom !== null){
-                agent.add(`[${ran+1}] `+ idiom);
-            }
-            else agent.add('Il y a une erreur, réessayez svp');
-            agent.add(quickRepliesF);
-          })
-    }
-
-    // Function is made for 4
-    function talkFor4(agent){
-        return ref.child("expressions").once("value", function(snapshot) {
-            var max = snapshot.numChildren();
-            var ran = randomInt(0,max);     
-            var express =  snapshot.child(`${ran}/express`).val();
-            var maxEx =  snapshot.child(`${ran}/example`).numChildren();
-            var ranEx = randomInt(0,maxEx);
-            var example = snapshot.child(`${ran}/example/${ranEx}`).val();
-            if(express !== null && example !== null){
-                agent.add(`[L'expression ${ran+1}] `+ express);
-                agent.add(`[L'exemple ${ranEx+1}] `+ example);
-            }
-            else agent.add('Il y a une erreur, réessayez svp');
-            agent.add(quickRepliesFF);
-          })
-    }
-
     // Translate function from any languages to another (Available in 4 languages)
     async function translateText(agent) {       
         var text = agent.parameters['any']; // The text to translate
@@ -766,75 +373,6 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     // Cette variable doit être globale
     var user_id = agent.originalRequest.payload.data.sender.id;
     exports.user_id = user_id;
-
-    // Default welcome when start to the conversation
-    function welcome(agent) {
-        var greeting = agent.parameters['yo'];
-        var lang;
-        // Appel au graphique Facebook pour obtenir les informations des utilisateurs
-        var url = `https://graph.facebook.com/${user_id}?fields=name&access_token=EAADLSmoiLyMBAHjhTE5QbiZAoGcVCcJEq1fmBTSlzYS98nMWA7utAuZAcSmZA5UiheZCpkHpRoT7LhnVPWu4LZAa7YyDSnlN8FZBH7dVnoKIPgTZBJ3P3HBNiBsKfeEvQIRJhK8ugxfFTMHCAaveSXKanpd8IDu7yy6M06U27ybJAZDZD`;
-        
-        var options = {
-        uri: url,
-        json: true
-        };
-
-        translate.detect(greeting, (err, results) => {
-            if (!err) {
-            lang = results.language;
-            }
-        });
-
-        return rp.get( options )
-        // eslint-disable-next-line promise/always-return
-        .then( body => {
-            if(greeting === 'yo' || greeting === 'Yo'){
-                agent.add(`Yo, what's up ${body.name}‼️ Long time no see, how are you bro?`);
-                agent.add(quickRepliesTest);
-            }
-            else{
-                switch(lang)
-                {
-                    case 'en':
-                        agent.add(`Hello ${body.name}‼️`);
-                        agent.add(quickReplies2E);
-                        break;
-                    case 'fr':
-                        agent.add(`Bonjour ${body.name}‼️`);
-                        agent.add(quickReplies2F);
-                        break;
-                    case 'vi':
-                        agent.add(`Sin trào ${body.name}‼️`);
-                        agent.add(quickReplies2V);
-                        break;
-                }
-            }
-            // eslint-disable-next-line promise/no-nesting
-            return admin.database().ref(`data`).once(`value`).then((snapshot)=>{
-                var valeur;
-                var position;
-                var deja = false;
-                for(var i = 0; i< 1000; i++) {
-                    valeur = snapshot.child(`userID/${i}`).val();
-                    // eslint-disable-next-line promise/always-return
-                    if(valeur === null) {
-                        position = i;
-                        break;
-                    }
-                }
-                for(var j = 0; j < position; j++) {
-                    valeur = snapshot.child(`userID/${j}`).val();
-                    if(valeur === user_id) {
-                        deja = true;
-                        break;
-                    }
-                }
-                if(deja === false) {
-                    admin.database().ref('data/userID').child(`${position}`).set(user_id);
-                }
-            });
-        });
-    }
 
     // Default fallback when the chatbot did not understand
     function fallback(agent) {
@@ -1406,132 +944,6 @@ exports.chatBot = functions.https.onRequest((request, response) => {
         });
     }
 
-    function regarderNiveau(agent){
-        var valeur;
-        var niveau;
-        var score = ['','','','',''];
-        var temp,temp1;
-        var finalScore ='';
-        var count = 0;
-        return ref.once(`value`).then((snapshot)=>{
-            valeur = snapshot.child(`scores/${user_id}`).val(); 
-            temp = valeur;
-            temp1 = temp;
-            while(temp >= 1){   
-                temp = Math.floor(temp) / 10;
-                //console.log(temp);               
-                count++;
-                //console.log(count);
-            }
-            
-            for(var i = count-1; i > 0; i--){
-                var temp_unit = Math.floor(temp1) % 10;
-                switch(temp_unit){
-                    case 0:
-                        score[i] += '0️⃣';
-                        break;
-                    case 1:
-                        score[i] += '1️⃣';
-                        break;
-                    case 2:
-                        score[i] += '2️⃣';
-                        break;
-                    case 3:
-                        score[i] += '3️⃣';
-                        break;
-                    case 4:
-                        score[i] += '4️⃣';
-                        break;
-                    case 5:
-                        score[i] += '5️⃣';
-                        break;
-                    case 6:
-                        score[i] += '6️⃣';
-                        break;
-                    case 7:
-                        score[i] += '7️⃣';
-                        break;
-                    case 8:
-                        score[i] += '8️⃣';
-                        break;
-                    case 9:
-                        score[i] += '9️⃣';
-                        break;
-                }
-                temp1 /= 10;
-                if(temp1 < 10){
-                    temp1 = Math.floor(temp1) %10;
-                    switch(temp1){
-                        case 0:
-                            score[0] += '0️⃣';
-                            break;
-                        case 1:
-                            score[0] += '1️⃣';
-                            break;
-                        case 2:
-                            score[0] += '2️⃣';
-                            break;
-                        case 3:
-                            score[0] += '3️⃣';
-                            break;
-                        case 4:
-                            score[0] += '4️⃣';
-                            break;
-                        case 5:
-                            score[0] += '5️⃣';
-                            break;
-                        case 6:
-                            score[0] += '6️⃣';
-                            break;
-                        case 7:
-                            score[0] += '7️⃣';
-                            break;
-                        case 8:
-                            score[0] += '8️⃣';
-                            break;
-                        case 9:
-                            score[0] += '9️⃣';
-                            break;
-                    }
-                }
-                
-            }
-            finalScore = score[0] + score[1] + score[2] + score[3] + score[4];
-
-            if(valeur < 0){
-                niveau = "✡️";
-                finalScore = `❗❓❗❓❗`;
-            }
-
-            if(valeur >0 && valeur < 500)
-                niveau = "🇦1️⃣";
-
-            if(valeur >= 500 && valeur < 1000)
-                niveau = "🇦2️⃣";
-
-            if(valeur >=1000 && valeur < 1500)
-                niveau = "🇧1️⃣";
-
-            if(valeur >=1500 && valeur < 2000)
-                niveau = "🇧2️⃣";
-
-            if(valeur >=2000 && valeur < 2500)
-                niveau = "🇨1️⃣";
-
-            if(valeur >=2500 && valeur <= 3000)
-                niveau = "🇨2️⃣";
-
-            if(valeur >= 6969){
-                niveau = "Vô ∞ Cực";
-            }
-            
-            agent.add(`Votre niveau: ${niveau}`);
-            agent.add(`Votre score: ${finalScore}`);
-            agent.add(quickReplies4A);
-        });
-    }
-
-   
     // // Uncomment and edit to make your own intent handler
     // // uncomment `intentMap.set('your intent name here', yourFunctionHandler);`
     // // below to get this function to be run when a Dialogflow intent is matched
@@ -1567,20 +979,18 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     intentMap.set('Default Welcome Intent', welcome);
     // intentMap.set('Default Fallback Intent', fallback);
     intentMap.set('Test', test);
-    intentMap.set('Random', askRandom);
-    intentMap.set('Answers', checkAnswer);
+
+    intentMap.set('TCFNotification', TCFStation);
+    intentMap.set('Random', questionsRandom);
+    intentMap.set('Answers', questionsCheck);
+    intentMap.set('Resultat', regarderNiveau);
+
     intentMap.set('AnswersFallback', checkFallback);
+
     intentMap.set('outilsStation', outilsStation);
-    intentMap.set('Idioms', talk4For);
-    intentMap.set('Expressions', talkFor4);
+    intentMap.set('Idioms', idiomes);
+    intentMap.set('Expressions', eCommunes);
     intentMap.set('Translate', translateText);
-    intentMap.set('divertissementStation', divertissementStation);
-    intentMap.set('Horoscopes', contentHoroscopes);
-    intentMap.set('Horoscopes - custom', horoscopes);
-    intentMap.set('Horoscopes China', contentHoroscopesChinois);
-    intentMap.set('Horoscopes China - custom', horoscopesChinois);
-    intentMap.set('Tarots', tarots);
-    //intentMap.set('Tarot - custom', tarots);
     intentMap.set('Definition', handleDefinition);
     intentMap.set('Words', defineWords);
     intentMap.set('Words - custom', defineWords);
@@ -1588,12 +998,21 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     intentMap.set('Synonyms - custom', defineSynonyms);
     intentMap.set('Antonyms', defineAntonyms);
     intentMap.set('Antonyms - custom', defineAntonyms);
-    intentMap.set('Resultat', regarderNiveau);
-    intentMap.set('TCFNotification', TCFStation);
+
+
+    intentMap.set('divertissementStation', divertissementStation);
+    intentMap.set('Horoscopes', contentHoroscopes);
+    intentMap.set('Horoscopes - custom', horoscopes);
+    intentMap.set('Horoscopes China', contentHoroscopesChinois);
+    intentMap.set('Horoscopes China - custom', horoscopesChinois);
+    intentMap.set('Tarots', tarots);
+    //intentMap.set('Tarot - custom', tarots);
+   
     intentMap.set('contactezNousStation', contactezNousStation);
     intentMap.set('contactNous', contactNous);
     intentMap.set('utilisateurquestionStation', questionStation);
     intentMap.set('regarderResponses', regarderResponses);
+    
     agent.handleRequest(intentMap);
 });
 
