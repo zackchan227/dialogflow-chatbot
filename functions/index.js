@@ -7,19 +7,10 @@
 
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
-const Facebook = require('facebook-node-sdk');
-const request = require('request');
 const cheerio = require('cheerio');
 const rp = require('request-promise-native');
-const align = require('align-text');
-const esrever = require('esrever');
 const projectId = 'mr-fap-naainy';
 const {Translate} = require('@google-cloud/translate').v2;
-<<<<<<< HEAD
-const welcomeTest = require('./welcome');
-=======
-//const welcomeFunction = require('./welcome');
-//const projectID = JSON.parse(process.env.FIREBASE_CONFIG).projectId;
 const welcome = require('./welcome');
 
 // TCF plug-ins
@@ -29,7 +20,6 @@ const questionsRandom = require('./TCF/questionsRandom');
 const questionsCheck = require('./TCF/questionsCheck');
 
 // Outils plug-ins
->>>>>>> fbc551b10a57b1ef8248f2fb686846245596a710
 const outilsStation = require('./Outils/outilsStation');
 const idiomes = require('./Outils/idiomes');
 const eCommunes = require('./Outils/eCommunes');
@@ -37,20 +27,19 @@ const eCommunes = require('./Outils/eCommunes');
 const translate = new Translate({projectId});
 const {WebhookClient} = require('dialogflow-fulfillment');
 const {Card, Suggestion} = require('dialogflow-fulfillment');
-<<<<<<< HEAD
+
 const serviceAccount = require("./mr-fap-naainy-firebase-adminsdk-d55vb-67d7b85f0b.json");
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
     databaseURL: `https://mr-fap-naainy.firebaseio.com/`
 });
-=======
+
 // const serviceAccount = require("./mr-fap-naainy-firebase-adminsdk-d55vb-67d7b85f0b.json");
 // admin.initializeApp({
 //     credential: admin.credential.cert(serviceAccount),
 //     databaseURL: `https://mr-fap-naainy.firebaseio.com/`
 // });
 
->>>>>>> fbc551b10a57b1ef8248f2fb686846245596a710
 const ref = admin.database().ref(`data`);
 
 process.env.DEBUG = 'dialogflow:debug'; // enables lib debugging statements
@@ -160,7 +149,6 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     quickRepliesHoroscopesChinois.addReply_("🐶");
     quickRepliesHoroscopesChinois.addReply_("🐷");
 
-<<<<<<< HEAD
     // Station de gestion des questions TCF
     function TCFStation(agent) {
         return ref.once(`value`).then((snapshot)=>{
@@ -497,8 +485,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
         });       
     }
 
-=======
->>>>>>> fbc551b10a57b1ef8248f2fb686846245596a710
+
     function contactNous(agent) {
         const { question } = agent.parameters;
         var position;
