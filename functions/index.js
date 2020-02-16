@@ -1199,17 +1199,22 @@ exports.chatBot = functions.https.onRequest((request, response) => {
                     sym2 += sym1[j];
                     sym2 += '\n';
                 }
-                agent.add(`Il y a ${max} synonymes`);
+                agent.add(`Il y a ${max-1} synonymes`);
                 agent.add(`${sym2}`);
             }else if(max > 10){
+                //var old = -1;
                 for(j = 0; j < 10; j++){
-                    ran = randomInt(0,max);
-                    sym1[ran] = sym1[ran].trim();
+                    //ran = randomInt(0,max);
+                    // while(old === ran){
+                    //     ran = randomInt(0,max);
+                    // }
+                    sym1[j] = sym1[j].trim();
                     sym2 += `[${j+1}] `;
-                    sym2 += sym1[ran];
+                    sym2 += sym1[j];
                     sym2 += '\n';
+                    //old = ran;
                 }
-                agent.add(`Il y a ${max} synonymes`);
+                agent.add(`Il y a ${max-1} synonymes`);
                 agent.add(`Mais, je vais vous donner 10 seulement.`);
                 agent.add(`${sym2}`);
             }
@@ -1287,23 +1292,23 @@ exports.chatBot = functions.https.onRequest((request, response) => {
             agent.add(`${mot}`);
             if(max > 0 && max <= 10){
                 for(var j = 0; j < max-1; j++){                 
-                    an1[ran] = an1[ran].trim();
+                    an1[j] = an1[j].trim();
                     an2 += `[${j+1}] `;
                     an2 += an1[ran];
                     an2 += '\n';
                 }
-                agent.add(`Il y a ${max} antonymes`);
+                agent.add(`Il y a ${max-1} antonymes`);
                 agent.add(`${an2}`);
             }else if(max > 10){
                 for(j = 0; j < 10; j++){
-                    ran = randomInt(j,max);
-                    an1[ran] = an1[ran].trim();
+                    //ran = randomInt(0,max);
+                    an1[j] = an1[j].trim();
                     an2 += `[${j+1}] `;
-                    an2 += an1[ran];
+                    an2 += an1[j];
                     an2 += '\n';
                 }
                
-                agent.add(`Il y a ${max} antonymes.`);
+                agent.add(`Il y a ${max-1} antonymes.`);
                 agent.add(`Mais, je vais vous donner 10 seulement.`);
                 agent.add(`${an2}`);
             }
