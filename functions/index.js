@@ -109,6 +109,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     })
     quickRepliesDefinition.addReply_("Définir des synonymes");
     quickRepliesDefinition.addReply_("Définir des antonymes");
+    quickRepliesDefinition.addReply_("Annuler");
     // Quick Reply Horoscopes
     const quickRepliesHoroscopes = new Suggestion({
         title: "Choisissez votre signe",
@@ -1137,7 +1138,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
             agent.add(`Définition de ${word}:`);
             agent.add(`Il y a ${text1.length-1} significations`)
             agent.add(`${text2}`);
-            agent.add(quickReplies2F);
+            agent.add(quickRepliesDefinition);
             // eslint-disable-next-line prefer-arrow-callback
             
             
@@ -1162,8 +1163,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
             
             return rp(options) // return Promise
         }
-
-            
+           
         // eslint-disable-next-line promise/catch-or-return
         // eslint-disable-next-line consistent-return
         return getPageContent(`${URL}`).then($ => {
@@ -1173,7 +1173,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
             var sym; 
             var sym1 = [];
             var sym2 = '';
-           
+            var max,ran;
             //console.log(mot);
             while(flag){
                 sym = $(`#synonymes > a:nth-child(${i})`).text();
@@ -1182,20 +1182,41 @@ exports.chatBot = functions.https.onRequest((request, response) => {
                     i++;    
                 }else flag = false;
             }
-            
-            //console.log(sym1.length);
-            for(var j = 0; j < sym1.length-1; j++){
-                sym1[j] = sym1[j].trim();
-                sym2 += `[${j+1}] `;
-                sym2 += sym1[j];
-                sym2 += '  ';
-            }
 
+            max = sym1.length;                   
+            //console.log(sym1.length);
+            // for(var j = 0; j < sym1.length-1; j++){    
+            //     sym1[j] = sym1[j].trim();
+            //     sym2 += `[${j+1}] `;
+            //     sym2 += sym1[j];
+            //     sym2 += '  ';
+            // }
             agent.add(`${mot}`);
-            agent.add(`Il y a ${sym1.length-1} synonymes`);
-            agent.add(`${sym2}`);
-            agent.add(quickReplies);
-           //console.log(sym2);
+            if(max > 0 && max <= 10){
+                for(var j = 0; j < max-1; j++){
+                    sym1[j] = sym1[j].trim();
+                    sym2 += `[${j+1}] `;
+                    sym2 += sym1[j];
+                    sym2 += '\n';
+                }
+                agent.add(`Il y a ${max} synonymes`);
+                agent.add(`${sym2}`);
+            }else if(max > 10){
+                for(j = 0; j < 10; j++){
+                    ran = randomInt(0,max);
+                    sym1[ran] = sym1[ran].trim();
+                    sym2 += `[${j+1}] `;
+                    sym2 += sym1[ran];
+                    sym2 += '\n';
+                }
+                agent.add(`Il y a ${max} synonymes`);
+                agent.add(`Mais, je vais vous donner 10 seulement.`);
+                agent.add(`${sym2}`);
+            }
+            else {
+                agent.add("Aucun résultat exact n'a été trouvé");
+            }          
+            agent.add(quickRepliesDefinition);
         });
     }
 
@@ -1228,9 +1249,10 @@ exports.chatBot = functions.https.onRequest((request, response) => {
             var an,sym,sym1,syms,a; 
             var an1 = [];
             var an2 = '';
+            var max,ran;
             
             // eslint-disable-next-line no-empty
-            for(index = 2; index < 696; index++){
+            for(index = 2; index < 333; index++){
                 sym = $(`#synonymes > a:nth-child(${index})`).text();
                 sym1 = $(`#synonymes > div:nth-child(${index}) > i`).text();
                 a = parseInt(sym1);
@@ -1239,7 +1261,10 @@ exports.chatBot = functions.https.onRequest((request, response) => {
                     syms = i-1;
                     break;
                 }
-                
+                if(index > 269){
+                    flag = false;
+                    break;
+               }              
             }
 
             while(flag){
@@ -1249,19 +1274,47 @@ exports.chatBot = functions.https.onRequest((request, response) => {
                     i++;    
                 }else flag = false;
             }
+
+            max = an1.length;
            
             //console.log(an1.length);
-            for(var j = 0; j < an1.length-1; j++){
-                an1[j] = an1[j].trim();
-                an2 += `[${j+1}] `;
-                an2 += an1[j];
-                an2 += '  ';
+            // for(var j = 0; j < an1.length-1; j++){
+            //     an1[j] = an1[j].trim();
+            //     an2 += `[${j+1}] `;
+            //     an2 += an1[j];
+            //     an2 += '  ';
+            // }
+            agent.add(`${mot}`);
+            if(max > 0 && max <= 10){
+                for(var j = 0; j < max-1; j++){                 
+                    an1[ran] = an1[ran].trim();
+                    an2 += `[${j+1}] `;
+                    an2 += an1[ran];
+                    an2 += '\n';
+                }
+                agent.add(`Il y a ${max} antonymes`);
+                agent.add(`${an2}`);
+            }else if(max > 10){
+                for(j = 0; j < 10; j++){
+                    ran = randomInt(j,max);
+                    an1[ran] = an1[ran].trim();
+                    an2 += `[${j+1}] `;
+                    an2 += an1[ran];
+                    an2 += '\n';
+                }
+               
+                agent.add(`Il y a ${max} antonymes.`);
+                agent.add(`Mais, je vais vous donner 10 seulement.`);
+                agent.add(`${an2}`);
+            }
+            else {
+                agent.add("Aucun résultat exact n'a été trouvé");
             }
 
-            agent.add(`${mot}`);
-            agent.add(`Il y a ${an1.length-1} antonymes`);
-            agent.add(`${an2}`);
-            agent.add(quickReplies);
+            
+
+            
+            agent.add(quickRepliesDefinition);
            //console.log(an2);
         });
     }
