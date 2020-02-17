@@ -47,6 +47,11 @@ const contactNous = require('./Contact/contactNous');
 const questionStation = require('./Contact/questionStation');
 const regarderResponses = require('./Contact/regarderResponses');
 
+// Admin plug-ins
+const adminStation = require('./Admin/adminStation');
+const adminQuestionStation = require('./Admin/adminQuestionStation');
+const questionReponse = require('./Admin/questionReponse');
+
 const translate = new Translate({projectId});
 
 
@@ -624,6 +629,10 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     intentMap.set('contactNous', contactNous);
     intentMap.set('utilisateurquestionStation', questionStation);
     intentMap.set('regarderResponses', regarderResponses);
+
+    intentMap.set('Admin', adminStation);
+    intentMap.set('adminQuestionStation', adminQuestionStation);
+    intentMap.set('questionReponse', questionReponse);
     
     agent.handleRequest(intentMap);
 });

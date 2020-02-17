@@ -1,6 +1,7 @@
 //Test version
 const projectId = 'mr-fap-naainy';
 const {Translate} = require('@google-cloud/translate').v2;
+const index = require('./index');
 
 const rp = require('request-promise-native');
 exports.rp =rp;
@@ -124,3 +125,18 @@ quickRepliesDefinition.addReply_("Synonymes");
 quickRepliesDefinition.addReply_("Antonymes");
 quickRepliesDefinition.addReply_("Annuler");
 exports.quickRepliesDefinition = quickRepliesDefinition;
+
+////////////////////////////////////////////////////////
+const quickRepliesAdmin = new Suggestion({
+    title: "Vous êtes administrateur.",
+    reply: "Poser une question"
+})
+quickRepliesAdmin.addReply_("Répondre aux questions");
+exports.quickRepliesAdmin = quickRepliesAdmin;
+
+////////////////////////////////////////////////////////
+const quickRepliesPasAdmin = new Suggestion({
+    title: "Désolé, cette fonction est réservée aux administrateurs",
+    reply: "Annuler"
+})
+exports.quickRepliesPasAdmin = quickRepliesPasAdmin;
