@@ -1,7 +1,6 @@
 const variables = require('./variables');
 const index = require('./index');
 
-
   // Default welcome when start to the conversation
   function welcome(agent) {
    var greeting = agent.parameters['yo'];

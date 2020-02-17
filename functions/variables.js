@@ -5,6 +5,9 @@ const {Translate} = require('@google-cloud/translate').v2;
 const rp = require('request-promise-native');
 exports.rp =rp;
 
+const cheerio = require('cheerio');
+exports.cheerio = cheerio;
+
 const admin = require('firebase-admin');
 exports.admin = admin;
 
@@ -27,7 +30,7 @@ const {Card, Suggestion} = require('dialogflow-fulfillment');
 //////////////////////////////////////////////////////////////
 const quickRepliesOutils = new Suggestion({
     title: "Choisissez un outil pour vous aider à apprendre le français:",
-    reply: "Expressions Idiomatiques"
+    reply: "Idiomes"
 })
 quickRepliesOutils.addReply_("Expressions Communes");
 quickRepliesOutils.addReply_("Définition");
@@ -111,3 +114,13 @@ const quickRepliesQCommencer = new Suggestion({
 quickRepliesQCommencer.addReply_("Annuler");
 exports.quickRepliesQCommencer = quickRepliesQCommencer;
 
+/////////////////////////////////////////////////////
+//Quick Reply Definition
+const quickRepliesDefinition = new Suggestion({
+    title: "Il y a trois fonctions pour votre choix :",
+    reply: "Définir un mot"
+})
+quickRepliesDefinition.addReply_("Synonymes");
+quickRepliesDefinition.addReply_("Antonymes");
+quickRepliesDefinition.addReply_("Annuler");
+exports.quickRepliesDefinition = quickRepliesDefinition;
