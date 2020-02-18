@@ -261,7 +261,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
 
     function checkDay(){
         var day;
-        return  day = (hh >= 0 && hh <= 14) ? 'demain' :  'aujourdhui';
+        return  day = (hh >= 0 && hh <= 14) ? 'aujourdhui':'demain';
     }
 
     function contentHoroscopes(agent){
