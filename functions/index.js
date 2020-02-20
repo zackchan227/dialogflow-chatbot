@@ -51,6 +51,8 @@ const regarderResponses = require('./Contact/regarderResponses');
 const adminStation = require('./Admin/adminStation');
 const adminQuestionStation = require('./Admin/adminQuestionStation');
 const questionReponse = require('./Admin/questionReponse');
+const adminPoserQStation = require('./Admin/adminPoserQStation');
+const niveauQuestion = require('./Admin/niveauQuestion');
 
 const translate = new Translate({projectId});
 
@@ -209,7 +211,10 @@ exports.chatBot = functions.https.onRequest((request, response) => {
         // agent.add(`I'm sorry, can you try again?`);
     }
     var datetime = new Date();
-    var hh = datetime.getHours();
+    var hh = datetime.getHours()+7;
+    if(hh>=24) 
+        hh = hh-24;
+
     var dd = datetime.getDate();
     var mm = datetime.getMonth()+1;
     function divertissementStation(agent) {     
@@ -261,7 +266,8 @@ exports.chatBot = functions.https.onRequest((request, response) => {
 
     function checkDay(){
         var day;
-        return  day = (hh >= 0 && hh <= 14) ? 'aujourdhui':'demain';
+        agent.add(`${hh}`);
+        return  day = (hh >= 0 && hh <= 14) ? 'demain':'aujourdhui';
     }
 
     function contentHoroscopes(agent){
@@ -633,6 +639,8 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     intentMap.set('Admin', adminStation);
     intentMap.set('adminQuestionStation', adminQuestionStation);
     intentMap.set('questionReponse', questionReponse);
+    intentMap.set('adminPoserQStation', adminPoserQStation);
+    intentMap.set('niveauQuestion', niveauQuestion);
     
     agent.handleRequest(intentMap);
 });
