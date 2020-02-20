@@ -12,10 +12,10 @@ function questionsCheck(agent)
 
         // Cette variable vérifie si le joueur a vérifié son niveau
         var testDeNiveau = snapshot.child(`levelTest/${index.user_id}`).val();
-        if(testDeNiveau === 0)
-            nouvelOuPas="";
-        else
+        if(testDeNiveau === 2)
             nouvelOuPas="TCF";
+        else
+            nouvelOuPas="";
 
         // Réponse du joueur
         var ans = agent.parameters['answer'];
@@ -30,7 +30,7 @@ function questionsCheck(agent)
         var explication = snapshot.child(`${nouvelOuPas}notes/${currentQuestion}`).val();
 
         // Score du joueur
-        var score;
+        var score = snapshot.child(`scores/${index.user_id}`).val();
 
         // Niveau du joueur
         var niveau;
@@ -52,7 +52,6 @@ function questionsCheck(agent)
         else if(check === true){
             agent.add(`⭕ C'est Correct :D`);    
             agent.add(`${explication}`);
-            score = snapshot.child(`scores/${index.user_id}`).val();
             if(testDeNiveau === 0) 
                 switch(currentQuestion){ //x10 quand prêt
                     case 0:
@@ -98,7 +97,6 @@ function questionsCheck(agent)
             agent.add(`❌ Ce n'est pas correct :(`);              
             agent.add(`La bonne réponse est: "${correctA}"`);    
             agent.add(`Explication: ${explication}`);
-            score = snapshot.child(`scores/${index.user_id}`).val();
             if(testDeNiveau === 2)
                 score -= 25;
             variables.admin.database().ref('data/scores').child(`${index.user_id}`).set(score);                                                                                        
@@ -134,8 +132,8 @@ function questionsCheck(agent)
             })
             agent.add(`Vous avez terminé votre premier test de niveau.`);
             agent.add(`Votre score est: ${score}`);
-            admin.database().ref('data/AskRandomQ').child(`${index.user_id}/9`).set('False');   
-            admin.database().ref('data/levelTest').child(`${index.user_id}`).set(2);
+            variables.admin.database().ref('data/AskRandomQ').child(`${index.user_id}/9`).set('False');   
+            variables.admin.database().ref('data/levelTest').child(`${index.user_id}`).set(2);
             agent.add(quickRepliesFinish);
         }
         else
