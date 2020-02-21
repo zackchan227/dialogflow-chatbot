@@ -10,11 +10,6 @@ function questionsRandom(agent)
     {   
         return variables.ref.once(`value`).then((snapshot)=>{
 
-            // Nombre de questions (dans la base de données Firebase) 
-            // Lorsque vous modifiez le nombre de questions dans la base de données, 
-            // modifiez simplement cette variable, pas besoin d'modifiez le code.
-            var nombreDeQuestion = 4;
-
             // Cette variable contient l'ID de la question
             var ID;
 
@@ -29,6 +24,24 @@ function questionsRandom(agent)
 
             // Niveau du joueur
             var niveau;
+            // Vérifier le niveau du joueur
+            if(score < 500)
+            niveau = "A1";
+                else if(score >= 500 && score < 1000)
+                        niveau = "A2";
+                    else if(score >= 1000 && score < 1500)
+                            niveau = "B1";
+                        else if(score >= 1500 && score < 2000)
+                                niveau = "B2";
+                            else if(score >= 2000 && score < 2500)
+                                    niveau = "C1";
+                                    else
+                                    niveau = "C2";
+
+            // Nombre de questions (dans la base de données Firebase) 
+            // Lorsque vous modifiez le nombre de questions dans la base de données, 
+            // modifiez simplement cette variable, pas besoin d'modifiez le code.
+            var nombreDeQuestion = snapshot.child(`TCFNiveauDesQuestions/${niveau}`).numChildren();
 
             // Cette variable est médiée pour changer la question
             var lvl;
@@ -68,19 +81,6 @@ function questionsRandom(agent)
                 }
             } else {
                 // si non
-                    // Vérifier le niveau du joueur
-                    if(score < 500)
-                        niveau = "A1";
-                    else if(score >= 500 && score < 1000)
-                            niveau = "A2";
-                        else if(score >= 1000 && score < 1500)
-                                niveau = "B1";
-                            else if(score >= 1500 && score < 2000)
-                                    niveau = "B2";
-                                else if(score >= 2000 && score < 2500)
-                                        niveau = "C1";
-                                        else
-                                        niveau = "C2";
                    
                     // Ces 2 fonctions vérifient si le joueur a répondu à toutes les questions 
                     // du questionnaire au niveau du joueur
@@ -90,7 +90,7 @@ function questionsRandom(agent)
                             sommeQuestion++; 
                     }
 
-                    if(sommeQuestion === 3)
+                    if(sommeQuestion === (nombreDeQuestion-1))
                         for(j = 0; j < nombreDeQuestion; j++) {
                             lvl = snapshot.child(`TCFNiveauDesQuestions/${niveau}/${j}`).val();
                             if(snapshot.child(`AskRandomQ/${index.user_id}/${lvl}`).val() === "True")
@@ -123,7 +123,7 @@ function questionsRandom(agent)
             var answer3 = snapshot.child(`${nouvelOuPas}answers/${ID}/3`).val();
             // eslint-disable-next-line promise/always-return
             if(question !== null) {
-                agent.add(`[${ID+1}] - ${question}`);
+                agent.add(`${question}`);
 
                 const quickReplies1 = new Suggestion({
                     title: "Choisissez une réponse",

@@ -132,6 +132,7 @@ const quickRepliesAdmin = new Suggestion({
     reply: "Poser une question"
 })
 quickRepliesAdmin.addReply_("Répondre aux questions");
+quickRepliesAdmin.addReply_("Annuler");
 exports.quickRepliesAdmin = quickRepliesAdmin;
 
 ////////////////////////////////////////////////////////

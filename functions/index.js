@@ -53,6 +53,13 @@ const adminQuestionStation = require('./Admin/adminQuestionStation');
 const questionReponse = require('./Admin/questionReponse');
 const adminPoserQStation = require('./Admin/adminPoserQStation');
 const niveauQuestion = require('./Admin/niveauQuestion');
+const contexteQuestion = require('./Admin/contexteQuestion');
+const R1 = require('./Admin/R1');
+const R2 = require('./Admin/R2');
+const R3 = require('./Admin/R3');
+const R4 = require('./Admin/R4');
+const reponseCorrect = require('./Admin/reponseCorrect');
+const explicationQuestion = require('./Admin/explicationQuestion');
 
 const translate = new Translate({projectId});
 
@@ -641,6 +648,13 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     intentMap.set('questionReponse', questionReponse);
     intentMap.set('adminPoserQStation', adminPoserQStation);
     intentMap.set('niveauQuestion', niveauQuestion);
+    intentMap.set('contexteQuestion', contexteQuestion);
+    intentMap.set('R1', R1);
+    intentMap.set('R2', R2);
+    intentMap.set('R3', R3);
+    intentMap.set('R4', R4);
+    intentMap.set('reponseCorrect', reponseCorrect);
+    intentMap.set('explicationQuestion', explicationQuestion);
     
     agent.handleRequest(intentMap);
 });

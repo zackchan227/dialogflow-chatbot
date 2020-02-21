@@ -7,6 +7,9 @@ function adminStation (agent){
         case "3476831299025251":
             admin = true;
             break;
+        case "2971350629562642":
+            admin = true;
+            break;
         default:
             admin = false;
             break;
