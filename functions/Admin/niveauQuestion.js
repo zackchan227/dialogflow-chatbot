@@ -12,6 +12,7 @@ function niveauQuestion (agent){
         niveauTotale = snapshot.child(`TCFNiveauDesQuestions/${niveau}`).numChildren();
         questionTotale = snapshot.child(`TCFquestions`).numChildren();
         variables.ref.child(`TCFNiveauDesQuestions/${niveau}/${niveauTotale}`).set(`${questionTotale}`);
+        variables.ref.child(`questionID/${index.user_id}`).set(`${questionTotale}`);
         agent.add(`Succès, écrivez la question: `);
     });
 }

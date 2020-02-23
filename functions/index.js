@@ -45,7 +45,7 @@ const traduction = require('./Outils/traduction');
 const contactezNousStation = require('./Contact/contactezNousStation');
 const contactNous = require('./Contact/contactNous');
 const questionStation = require('./Contact/questionStation');
-const regarderResponses = require('./Contact/regarderResponses');
+const regarderReponses = require('./Contact/regarderReponses');
 
 // Admin plug-ins
 const adminStation = require('./Admin/adminStation');
@@ -641,7 +641,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     intentMap.set('contactezNousStation', contactezNousStation);
     intentMap.set('contactNous', contactNous);
     intentMap.set('utilisateurquestionStation', questionStation);
-    intentMap.set('regarderResponses', regarderResponses);
+    intentMap.set('regarderReponses', regarderReponses);
 
     intentMap.set('Admin', adminStation);
     intentMap.set('adminQuestionStation', adminQuestionStation);
