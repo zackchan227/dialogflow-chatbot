@@ -60,6 +60,7 @@ const R3 = require('./Admin/R3');
 const R4 = require('./Admin/R4');
 const reponseCorrect = require('./Admin/reponseCorrect');
 const explicationQuestion = require('./Admin/explicationQuestion');
+const adminQuestionStation_cancel = require('./Admin/adminQuestionStation_cancel');
 
 const translate = new Translate({projectId});
 
@@ -655,6 +656,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     intentMap.set('R4', R4);
     intentMap.set('reponseCorrect', reponseCorrect);
     intentMap.set('explicationQuestion', explicationQuestion);
+    intentMap.set('adminQuestionStation - cancel', adminQuestionStation_cancel);
     
     agent.handleRequest(intentMap);
 });
