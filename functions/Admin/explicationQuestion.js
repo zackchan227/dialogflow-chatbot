@@ -1,3 +1,6 @@
+/* eslint-disable prefer-arrow-callback */
+/* eslint-disable promise/always-return */
+/* eslint-disable promise/no-nesting */
 const variables = require('../variables');
 const index = require('../index');
 
@@ -17,6 +20,7 @@ function explicationQuestion (agent){
         remove.remove()
         // eslint-disable-next-line prefer-arrow-callback
         // eslint-disable-next-line promise/always-return
+        // eslint-disable-next-line prefer-arrow-callback
         .then(function() {
             console.log("Remove succeeded.")
         })

@@ -7,20 +7,11 @@
 
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
-//const axios = require('axios');
-//const request = require('request-promise');
-//const FB = require('fb');
 const Facebook = require('facebook-node-sdk');
-const request = require('request');
 const cheerio = require('cheerio');
 const rp = require('request-promise-native');
-const align = require('align-text');
-const esrever = require('esrever');
-//const {google} = require('googleapis');
 const projectId = 'mr-fap-naainy';
 const {Translate} = require('@google-cloud/translate').v2;
-//const welcomeFunction = require('./welcome');
-//const projectID = JSON.parse(process.env.FIREBASE_CONFIG).projectId;
 const welcome = require('./welcome');
 
 // TCF plug-ins
@@ -66,18 +57,8 @@ const reponseCorrect = require('./Admin/reponseCorrect');
 const explicationQuestion = require('./Admin/explicationQuestion');
 const adminQuestionStation_cancel = require('./Admin/adminQuestionStation_cancel');
 
-
-const translate = new Translate({projectId});
-
-
 const {WebhookClient} = require('dialogflow-fulfillment');
 const {Card, Suggestion} = require('dialogflow-fulfillment');
-// const serviceAccount = require("./mr-fap-naainy-firebase-adminsdk-d55vb-67d7b85f0b.json");
-// admin.initializeApp({
-//     credential: admin.credential.cert(serviceAccount),
-//     databaseURL: `https://mr-fap-naainy.firebaseio.com/`
-// });
-
 const ref = admin.database().ref(`data`);
 var facebook = new Facebook({ appID: '223520468643619', secret: 'nothing' });
 
@@ -278,9 +259,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     }
 
     function checkDay(){
-        var day;
-        agent.add(`${hh}`);
-        return  day = (hh >= 0 && hh <= 14) ? 'demain':'aujourdhui';
+        return (hh >= 0 && hh <= 14) ? 'demain':'aujourdhui';
     }
 
     function contentHoroscopes(agent){
