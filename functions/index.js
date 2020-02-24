@@ -28,6 +28,10 @@ const TCFStation = require('./TCF/TCFStation');
 const regarderNiveau = require('./TCF/regarderNiveau');
 const questionsRandom = require('./TCF/questionsRandom');
 const questionsCheck = require('./TCF/questionsCheck');
+const comprehensionEcrite = require('./TCF/comprehensionEcrite');
+const comprehensionEcriteCheck = require('./TCF/comprehensionEcriteCheck');
+const comprehensionOrale = require('./TCF/comprehensionOrale');
+const comprehensionOraleCheck = require('./TCF/comprehensionOraleCheck');
 
 // Outils plug-ins
 const outilsStation = require('./Outils/outilsStation');
@@ -61,6 +65,7 @@ const R4 = require('./Admin/R4');
 const reponseCorrect = require('./Admin/reponseCorrect');
 const explicationQuestion = require('./Admin/explicationQuestion');
 const adminQuestionStation_cancel = require('./Admin/adminQuestionStation_cancel');
+
 
 const translate = new Translate({projectId});
 
@@ -616,7 +621,11 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     intentMap.set('Random', questionsRandom);
     intentMap.set('Answers', questionsCheck);
     intentMap.set('Resultat', regarderNiveau);
-
+    intentMap.set('comprehensionEcrite', comprehensionEcrite);
+    intentMap.set('comprehensionEcriteCheck', comprehensionEcriteCheck);
+    intentMap.set('comprehensionOrale', comprehensionOrale);
+    intentMap.set('comprehensionOraleCheck', comprehensionOraleCheck);
+    
     intentMap.set('AnswersFallback', checkFallback);
 
     intentMap.set('outilsStation', outilsStation);
