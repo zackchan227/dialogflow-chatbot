@@ -19,8 +19,6 @@ const TCFStation = require('./TCF/TCFStation');
 const regarderNiveau = require('./TCF/regarderNiveau');
 const questionsRandom = require('./TCF/questionsRandom');
 const questionsCheck = require('./TCF/questionsCheck');
-const comprehensionEcrite = require('./TCF/comprehensionEcrite');
-const comprehensionEcriteCheck = require('./TCF/comprehensionEcriteCheck');
 const comprehensionOrale = require('./TCF/comprehensionOrale');
 const comprehensionOraleCheck = require('./TCF/comprehensionOraleCheck');
 
@@ -600,8 +598,6 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     intentMap.set('Random', questionsRandom);
     intentMap.set('Answers', questionsCheck);
     intentMap.set('Resultat', regarderNiveau);
-    intentMap.set('comprehensionEcrite', comprehensionEcrite);
-    intentMap.set('comprehensionEcriteCheck', comprehensionEcriteCheck);
     intentMap.set('comprehensionOrale', comprehensionOrale);
     intentMap.set('comprehensionOraleCheck', comprehensionOraleCheck);
     

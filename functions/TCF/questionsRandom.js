@@ -1,6 +1,6 @@
 const variables = require('../variables');
 const index = require('../index');
-const {Card, Suggestion} = require('dialogflow-fulfillment');
+const {Card, Suggestion, Image} = require('dialogflow-fulfillment');
 
 function randomInt(min, max) {
     return min + Math.floor((max - min) * Math.random());
@@ -114,26 +114,55 @@ function questionsRandom(agent)
                     ID = snapshot.child(`TCFNiveauDesQuestions/${niveau}/${IDQuestion}`).val();
                 }
 
+            var image = snapshot.child(`${nouvelOuPas}questions/${ID}/Image`).val();
+        
             // Afficher la question
             variables.admin.database().ref('data/CurrentQuestion').child(`${index.user_id}`).set(ID);
-            var question = snapshot.child(`${nouvelOuPas}questions/${ID}`).val();
-            var answer0 = snapshot.child(`${nouvelOuPas}answers/${ID}/0`).val();
-            var answer1 = snapshot.child(`${nouvelOuPas}answers/${ID}/1`).val();
-            var answer2 = snapshot.child(`${nouvelOuPas}answers/${ID}/2`).val();
-            var answer3 = snapshot.child(`${nouvelOuPas}answers/${ID}/3`).val();
+            var question;
+            var answer0;
+            var answer1;
+            var answer2;
+            var answer3;
+            // eslint-disable-next-line promise/always-return
+            if(image !== null) {
+                var code = snapshot.child(`${nouvelOuPas}questions/${ID}/Image`).val();
+                agent.add(new Image(`https://i.imgur.com/${code}.jpg`));
+                question = snapshot.child(`${nouvelOuPas}questions/${ID}/Question`).val();
+            }
+            else 
+                question = snapshot.child(`${nouvelOuPas}questions/${ID}`).val();
+
+            answer0 = snapshot.child(`${nouvelOuPas}answers/${ID}/0`).val();
+            answer1 = snapshot.child(`${nouvelOuPas}answers/${ID}/1`).val();
+            answer2 = snapshot.child(`${nouvelOuPas}answers/${ID}/2`).val();
+            answer3 = snapshot.child(`${nouvelOuPas}answers/${ID}/3`).val();
             // eslint-disable-next-line promise/always-return
             if(question !== null) {
                 agent.add(`${question}`);
+                if(image !== null) {
+                    agent.add(`${answer0}`);
+                    agent.add(`${answer1}`);
+                    agent.add(`${answer2}`);
+                    agent.add(`${answer3}`);
 
-                const quickReplies1 = new Suggestion({
-                    title: "Choisissez une réponse",
-                    reply: `${answer0}`
-                })
-                quickReplies1.addReply_(`${answer1}`);
-                quickReplies1.addReply_(`${answer2}`);
-                quickReplies1.addReply_(`${answer3}`);
-        
-                agent.add(quickReplies1);
+                    const quickReplies1 = new Suggestion({
+                        title: "Choisissez une réponse",
+                        reply: `A`
+                    })
+                    quickReplies1.addReply_(`B`);
+                    quickReplies1.addReply_(`C`);
+                    quickReplies1.addReply_(`D`);
+                    agent.add(quickReplies1);
+                } else {
+                    const quickReplies2 = new Suggestion({
+                        title: "Choisissez une réponse",
+                        reply: `${answer0}`
+                    })
+                    quickReplies2.addReply_(`${answer1}`);
+                    quickReplies2.addReply_(`${answer2}`);
+                    quickReplies2.addReply_(`${answer3}`);
+                    agent.add(quickReplies2);
+                }
 
                 variables.admin.database().ref('data/AskRandomQ').child(`${index.user_id}/${ID}`).set('True');
             }
