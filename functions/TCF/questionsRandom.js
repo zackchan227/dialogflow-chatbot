@@ -6,6 +6,13 @@ function randomInt(min, max) {
     return min + Math.floor((max - min) * Math.random());
 }
 
+function randomIntAd(min, max, no1, no2, no3) {
+    var random = randomInt(min, max);
+    while(random === no1 || random === no2 || random === no3)
+        random = randomInt(min, max);
+    return random;
+}
+
 function questionsRandom(agent)
     {   
         return variables.ref.once(`value`).then((snapshot)=>{
@@ -128,14 +135,25 @@ function questionsRandom(agent)
                 var code = snapshot.child(`${nouvelOuPas}questions/${ID}/Image`).val();
                 agent.add(new Image(`https://i.imgur.com/${code}.jpg`));
                 question = snapshot.child(`${nouvelOuPas}questions/${ID}/Question`).val();
+                answer0 = snapshot.child(`${nouvelOuPas}answers/${ID}/0`).val();
+                answer1 = snapshot.child(`${nouvelOuPas}answers/${ID}/1`).val();
+                answer2 = snapshot.child(`${nouvelOuPas}answers/${ID}/2`).val();
+                answer3 = snapshot.child(`${nouvelOuPas}answers/${ID}/3`).val();
             }
-            else 
+            else {
                 question = snapshot.child(`${nouvelOuPas}questions/${ID}`).val();
 
-            answer0 = snapshot.child(`${nouvelOuPas}answers/${ID}/0`).val();
-            answer1 = snapshot.child(`${nouvelOuPas}answers/${ID}/1`).val();
-            answer2 = snapshot.child(`${nouvelOuPas}answers/${ID}/2`).val();
-            answer3 = snapshot.child(`${nouvelOuPas}answers/${ID}/3`).val();
+                var random0 = randomInt(0, 4);
+                var random1 = randomIntAd(0, 4, random0, null, null);
+                var random2 = randomIntAd(0, 4, random0, random1, null);
+                var random3 = randomIntAd(0, 4, random0, random1, random2);
+
+                answer0 = snapshot.child(`${nouvelOuPas}answers/${ID}/${random0}`).val();
+                answer1 = snapshot.child(`${nouvelOuPas}answers/${ID}/${random1}`).val();
+                answer2 = snapshot.child(`${nouvelOuPas}answers/${ID}/${random2}`).val();
+                answer3 = snapshot.child(`${nouvelOuPas}answers/${ID}/${random3}`).val();
+            }
+
             // eslint-disable-next-line promise/always-return
             if(question !== null) {
                 agent.add(`${question}`);
