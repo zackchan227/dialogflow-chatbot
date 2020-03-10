@@ -129,7 +129,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     quickRepliesHoroscopes.addReply_("Gémeaux");
     quickRepliesHoroscopes.addReply_("Cancer");
     quickRepliesHoroscopes.addReply_("Lion");
-    quickRepliesHoroscopes.addReply_("Viergie");
+    quickRepliesHoroscopes.addReply_("Viegre");
     quickRepliesHoroscopes.addReply_("Balance");
     quickRepliesHoroscopes.addReply_("Scorpion");
     quickRepliesHoroscopes.addReply_("Sagittaire");
