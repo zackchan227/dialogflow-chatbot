@@ -97,8 +97,12 @@ function questionsCheck(agent)
             agent.add(`❌ Ce n'est pas correct :(`);              
             agent.add(`La bonne réponse est: "${correctA}"`);    
             agent.add(`Explication: ${explication}`);
-            if(testDeNiveau === 2)
-                score -= 25;
+            if(score > 0)
+                if(testDeNiveau === 2) {
+                    score -= 25;
+                    if(score < 0)
+                        score = 0;
+                }
             variables.admin.database().ref('data/scores').child(`${index.user_id}`).set(score);                                                                                        
         }       
         else {
