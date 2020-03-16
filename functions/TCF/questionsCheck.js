@@ -51,38 +51,38 @@ function questionsCheck(agent)
         }
         else if(check === true){
             agent.add(`⭕ C'est Correct :D`);    
-            agent.add(`${explication}`);
+            agent.add(`Explication: ${explication}`);
             if(testDeNiveau === 0) 
-                switch(currentQuestion){ //x10 quand prêt
+                switch(currentQuestion){ 
                     case 0:
-                        score += 20;
+                        score += 100;
                         break;
                     case 1:
-                        score += 20;
+                        score += 100;
                         break;
                     case 2:
-                        score += 25;
+                        score += 150;
                         break;
                     case 3:
-                        score += 25;
+                        score += 150;
                         break;
                     case 4:
-                        score += 30;
+                        score += 200;
                         break;
                     case 5:
-                        score += 30;
+                        score += 200;
                         break;
                     case 6:
-                        score += 30;
+                        score += 250;
                         break;
                     case 7:
-                        score += 35;
+                        score += 250;
                         break;
                     case 8:
-                        score += 35;
+                        score += 300;
                         break;
                     case 9:
-                        score += 35;
+                        score += 300;
                         break;
                     default:
                         score += 25;
@@ -90,6 +90,7 @@ function questionsCheck(agent)
                 }
             else
                 score += 25;
+            variables.admin.database().ref('data/AskRandomQ').child(`${index.user_id}/${currentQuestion}`).set('True');
             variables.admin.database().ref('data/scores').child(`${index.user_id}`).set(score);
         }
         //eslint-disable-next-line promise/always-return
@@ -103,6 +104,10 @@ function questionsCheck(agent)
                     if(score < 0)
                         score = 0;
                 }
+                
+            if(testDeNiveau !== 2)
+                variables.admin.database().ref('data/AskRandomQ').child(`${index.user_id}/${currentQuestion}`).set('True');
+
             variables.admin.database().ref('data/scores').child(`${index.user_id}`).set(score);                                                                                        
         }       
         else {

@@ -109,11 +109,13 @@ function questionsRandom(agent)
                     lvl = snapshot.child(`TCFNiveauDesQuestions/${niveau}/${IDQuestion}`).val();
                     verQuestion = snapshot.child(`AskRandomQ/${index.user_id}/${lvl}`).val();
     
+                    var h = 1;
                     // Vérifier si la question a été posée
                     while(verQuestion === "True"){
-                        IDQuestion = randomInt(0,nombreDeQuestion);
+                        IDQuestion = (IDQuestion + h*h) % nombreDeQuestion;
                         lvl = snapshot.child(`TCFNiveauDesQuestions/${niveau}/${IDQuestion}`).val();
                         verQuestion = snapshot.child(`AskRandomQ/${index.user_id}/${lvl}`).val();
+                        h++
                         // admin.database().ref('data/AskRandomQ').child(`${user_id}/${IDQuestion}`).set('False');
                     }
                     
@@ -181,8 +183,6 @@ function questionsRandom(agent)
                     quickReplies2.addReply_(`${answer3}`);
                     agent.add(quickReplies2);
                 }
-
-                variables.admin.database().ref('data/AskRandomQ').child(`${index.user_id}/${ID}`).set('True');
             }
         });
     }
