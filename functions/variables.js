@@ -55,15 +55,6 @@ const quickReplieseCommunes = new Suggestion({
 quickReplieseCommunes.addReply_("Annuler");
 exports.quickReplieseCommunes = quickReplieseCommunes;
 
-//////////////////////////////////////////////////////////////
-const quickRepliesTest = new Suggestion({
-    title: "There are 3 options, what's your choice?",
-    reply: "Random Question"
-})
-quickRepliesTest.addReply_("Talk for 4");
-quickRepliesTest.addReply_("Horoscope");
-exports.quickRepliesTest = quickRepliesTest;
-
 /////////////////////////////////////////////////////////
 const quickReplies2F = new Suggestion({
     title: "Que-voulez vous faire?",
@@ -71,21 +62,22 @@ const quickReplies2F = new Suggestion({
 })
 quickReplies2F.addReply_("Outils");
 quickReplies2F.addReply_("Divertissement");
+quickReplies2F.addReply_("Contacte mentor");
 quickReplies2F.addReply_("Contacte l'admin");
 exports.quickReplies2F = quickReplies2F;
 
 const quickReplies2E = new Suggestion({
-    title: "There are random question and talk for 4, what's your choice?",
-    reply: "Random Question"
+    title: "Welcome to Chatbot `Parlez-vous Francais`, an effective tool for learning French! Currently English language is not yet supported!",
+    reply: "TCF Questions"
 })
-quickReplies2E.addReply_("Talk for 4");
+quickReplies2E.addReply_("Annuler");
 exports.quickReplies2E = quickReplies2E;
 
 const quickReplies2V = new Suggestion({
-    title: "Ấn vào nút bên trái để chơi lô đề, ấn vào nút bên phải để xem chân lý",
-    reply: "Chơi lô đề"
+    title: "Chào mừng bạn đến với Chatbot `Parlez-vous Francais`, một công cụ hữu hiệu để học tiếng Pháp ! Hiện tại ngôn ngữ tiếng Việt vẫn chưa được hỗ trợ !",
+    reply: "TCF Questions"
 })
-quickReplies2V.addReply_("Xem chân lý");
+quickReplies2V.addReply_("Annuler");
 exports.quickReplies2V = quickReplies2V;
 
 /////////////////////////////////////////////////////
@@ -141,3 +133,19 @@ const quickRepliesPasAdmin = new Suggestion({
     reply: "Annuler"
 })
 exports.quickRepliesPasAdmin = quickRepliesPasAdmin;
+
+////////////////////////////////////////////////////////
+const quickRepliesDivertissement = new Suggestion({
+    title: "Vous pouvez vous référer aux horoscopes, aux horoscopes chinois et au tarot pour prédire votre destin aujourd'hui.",
+    reply: "Horoscopes"
+})
+quickRepliesDivertissement.addReply_("Horoscopes Chinois");
+exports.quickRepliesDivertissement = quickRepliesDivertissement;
+
+////////////////////////////////////////////////////////
+const quickRepliesTest = new Suggestion({
+    title: "Désolé, le zodiaque que vous avez choisi n'existe pas! Veuillez réessayer.",
+    reply: "Horoscopes"
+})
+quickRepliesTest.addReply_("Horoscopes Chinois");
+exports.quickRepliesTest = quickRepliesTest;

@@ -39,14 +39,14 @@ function questionsCheck(agent)
         var check = false;
 
         // Vérifie si la réponse du joueur est bonne ou fausse
-        if(ans === correctA) {
+        if(ans.toUpperCase() === correctA.toUpperCase()) {
             check = true;
         }
 
         // Calculer le score du joueur
         if(ans === 'je ne sais pas' || ans === 'Je ne sais pas' || ans === 'sais pas' 
-        || ans === 'idk' || ans === 'dont know' || ans === `don't know` || ans === 'who knows' 
-        || ans === 'không biết' || ans === 'đéo biết'){
+        || ans === 'idk' || ans === 'dont know' || ans === `don't know` 
+        || ans === 'không biết'){
             agent.add(`Essayez d'y répondre, ne vous inquiétez pas de l'échec 🤗`);
         }
         else if(check === true){

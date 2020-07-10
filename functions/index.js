@@ -32,7 +32,10 @@ const synonymes = require('./Outils/synonymes');
 const antonymes = require('./Outils/antonymes');
 const traduction = require('./Outils/traduction');
 
-//
+//divertissementStation
+const divertissementStation = require('./Divertissement/divertissementStation');
+const horoscopes = require('./Divertissement/horoscopes');
+const horoscopesChinois = require('./Divertissement/horoscopes_chinois');
 
 // Contact plug-ins
 const contactezNousStation = require('./Contact/contactezNousStation');
@@ -90,13 +93,6 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     })
     quickRepliesV.addReply_("Đéo");
 
-    const quickRepliesDivertissement = new Suggestion({
-        title: "Vous pouvez vous référer aux horoscopes, aux horoscopes chinois et au tarot pour prédire votre destin aujourd'hui.",
-        reply: "Horoscopes"
-    })
-    quickRepliesDivertissement.addReply_("Horoscopes Chinois");
-    quickRepliesDivertissement.addReply_("Tarot");
-
     //Quick Reply 3
     const quickReplies3F = new Suggestion({
         title: "Choisissez une réponse",
@@ -110,15 +106,6 @@ exports.chatBot = functions.https.onRequest((request, response) => {
         reply: "Rejouer"
     })
     quickReplies4.addReply_("Annuler");
-
-    /////////////////////////////////////////////////////////
-    const quickReplies2F = new Suggestion({
-        title: "Que-voulez vous faire?",
-        reply: "TCF Question"
-    })
-    quickReplies2F.addReply_("Outils");
-    quickReplies2F.addReply_("Divertissement");
-    quickReplies2F.addReply_("Contacte l'admin");
 
     // Quick Reply Horoscopes
     const quickRepliesHoroscopes = new Suggestion({
@@ -202,294 +189,13 @@ exports.chatBot = functions.https.onRequest((request, response) => {
         // agent.add(`I didn't understand`);
         // agent.add(`I'm sorry, can you try again?`);
     }
-    var datetime = new Date();
-    var hh = datetime.getHours()+7;
-    if(hh>=24) 
-        hh = hh-24;
-
-    var dd = datetime.getDate();
-    var mm = datetime.getMonth()+1;
-    function divertissementStation(agent) {     
-        var mois;
-        switch(mm){
-            case 1:
-                mois = "Janvier";
-                break;
-            case 2:
-                mois = "Février";
-                break;
-            case 3:
-                mois = "Mars";
-                break;
-            case 4:
-                mois = "Avril";
-                break;
-            case 5:
-                mois = "Mai";
-                break;
-            case 6:
-                mois = "Juin";
-                break;
-            case 7:
-                mois = "Juillet";
-                break;
-            case 8:
-                mois = "Août";
-                break;
-            case 9:
-                mois = "Septembre";
-                break;
-            case 10:
-                mois = "Octobre";
-                break;
-            case 11:
-                mois = "Novembre";
-                break;
-            case 12:
-                mois = "Décembre";
-                break;
-        }
-
-        var yyyy = datetime.getFullYear();
-
-        agent.add(`Aujourd'hui c'est: ${dd} ${mois} ${yyyy}`);
-        agent.add(quickRepliesDivertissement);
-    }
-
-    function checkDay(){
-        return (hh >= 0 && hh <= 14) ? 'demain':'aujourdhui';
-    }
 
     function contentHoroscopes(agent){
         agent.add(quickRepliesHoroscopes);
     }
-    // eslint-disable-next-line consistent-return
-    // 
-    function horoscopes(agent){
-        var sign = agent.parameters['horoscope'];
-        var horos = ['Bélier', 'Taureau', 'Gémeaux','Cancer','Lion', 'Viegre', 'Balance', 'Scorpion','Sagittaire', 'Capricorne','Verseau','Poissons'];
-        var check = false;
-        var index;
-        var day = checkDay();
-
-        for(var i = 0; i < 12; i++){
-            if(sign === horos[i]){
-                check = true;
-                index = i+1;
-                break;
-            }
-        }
-
-        if(check !== true){
-            agent.add(`Horoscope ${sign} n'est pas disponible`);
-            agent.add(quickRepliesTest);
-            return;
-        }
-
-        if(check === true){
-            const URL = `https://www.horoscope.com/fr/horoscopes/general/horoscope-general-du-jour-${day}.aspx?signe=${index}`; // Crawl data from URL
-            const getPageContent = (uri) => {
-                const options = {
-                    uri,
-                    headers: {
-                    'User-Agent': 'Request-Promise'
-                    },
-                    transform: (body) => {
-                    return cheerio.load(body) // Parsing the html code
-                    }
-                }
-            
-                return rp(options) // return Promise
-            }
-
-            
-            // eslint-disable-next-line promise/catch-or-return
-            // eslint-disable-next-line consistent-return
-            return getPageContent(`${URL}`).then($ => {
-                //console.log($('div.view-content > ul').text())
-                var text = $('div.horoscope-content > p').text();
-                var text1 = '';
-                for(var i = 0; i < 1696; i++){
-                    
-                    if(i > 200 && text[i] === '\n'){
-                        break;
-                    }
-                    text1 += text[i];
-                }
-                agent.add(`Horoscopes ${sign}: `);
-                agent.add(text1);
-                agent.add(quickReplies2F);
-            })
-        }
-    }
 
     function contentHoroscopesChinois(agent){
         agent.add(quickRepliesHoroscopesChinois);
-    }
-    // eslint-disable-next-line consistent-return
-    // 
-    function horoscopesChinois(agent){
-        var sign = agent.parameters['HoroscopesChina'];
-        var horos = ['🐭', '🐮', '🐯','🐰','🐉', '🐍', '🐴', '🐐','🐵', '🐤','🐶','🐷'];
-        var check = false;
-        var index;
-        var day = checkDay();
-
-        if(isNaN(sign)){
-            for(var i = 0; i < 12; i++){
-                if(sign === horos[i]){
-                    check = true;
-                    switch(sign){
-                        case '🐵': 
-                            index = 9;
-                            sign = 'Singe';
-                            break;
-                        case '🐤':
-                            index = 10;
-                            sign = 'Coq';
-                            break;
-                        case '🐶':
-                            index = 11;
-                            sign ='Chien';
-                            break;
-                         case '🐷':
-                            index = 12;
-                            sign ='Cochon';
-                            break;
-                         case '🐭':
-                            index = 3;
-                            sign ='Rat';
-                            break;
-                         case '🐮':
-                            index = 1;
-                            sign ='Boeuf';
-                            break;
-                         case '🐯':
-                            index = 6;
-                            sign ='Tigre';
-                            break;
-                         case '🐰':
-                            index = 7;
-                            sign ='Lièvre';
-                            break;
-                         case '🐉':
-                            index = 5;
-                            sign ='Dragon';
-                            break;
-                         case '🐍':
-                            index = 4;
-                            sign ='Serpent';
-                            break;
-                         case '🐴':
-                            index = 8;
-                            sign ='Cheval';
-                            break;
-                         case '🐐':
-                            index = 2;
-                            sign ='Chèvre';
-                            break;
-                    }
-                    //index = i+1;
-                    break;
-                }
-            }
-        }
-        else {
-            check = true;
-            var mod = sign % 12;
-            switch(mod){
-                case 0: 
-                    index = 9;
-                    sign = 'Singe';
-                    break;
-                case 1:
-                    index = 10;
-                    sign = 'Coq';
-                    break;
-                case 2:
-                    index = 11;
-                    sign ='Chien';
-                    break;
-                 case 3:
-                    index = 12;
-                    sign ='Cochon';
-                    break;
-                 case 4:
-                    index = 3;
-                    sign ='Rat';
-                    break;
-                 case 5:
-                    index = 1;
-                    sign ='Boeuf';
-                    break;
-                 case 6:
-                    index = 6;
-                    sign ='Tigre';
-                    break;
-                 case 7:
-                    index = 7;
-                    sign ='Lièvre';
-                    break;
-                 case 8:
-                    index = 5;
-                    sign ='Dragon';
-                    break;
-                 case 9:
-                    index = 4;
-                    sign ='Serpent';
-                    break;
-                 case 10:
-                    index = 8;
-                    sign ='Cheval';
-                    break;
-                 case 11:
-                    index = 2;
-                    sign ='Chèvre';
-                    break;
-            }
-        }
-
-        if(check !== true){
-            agent.add(`Horoscope ${sign} n'est pas disponible`);
-            agent.add(quickRepliesTest);
-            return;
-        }
-
-        if(check === true){
-            const URL = `https://www.horoscope.com/fr/horoscopes/chinois/horoscope-chinois-du-jour-${day}.aspx?signe=${index}`; // Crawl data from URL
-            const getPageContent = (uri) => {
-                const options = {
-                    uri,
-                    headers: {
-                    'User-Agent': 'Request-Promise'
-                    },
-                    transform: (body) => {
-                    return cheerio.load(body) // Parsing the html code
-                    }
-                }
-            
-                return rp(options) // return Promise
-            }
-
-            
-            // eslint-disable-next-line promise/catch-or-return
-            // eslint-disable-next-line consistent-return
-            return getPageContent(`${URL}`).then($ => {
-                //console.log($('div.view-content > ul').text())
-                var text = $('div.horoscope-content > p').text();
-                var text1 = '';
-                for(var i = 0; i < 1696; i++){
-                    
-                    if(i > 200 && text[i] === '\n'){
-                        break;
-                    }
-                    text1 += text[i];
-                }
-                agent.add(`Horoscopes ${sign}: `);
-                agent.add(text1);
-                agent.add(quickReplies2F);
-            })
-        }
     }
 
     function contentTarots(agent){

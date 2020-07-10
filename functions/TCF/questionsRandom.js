@@ -17,6 +17,10 @@ function questionsRandom(agent)
     {   
         return variables.ref.once(`value`).then((snapshot)=>{
 
+            // Réponse du joueur
+            var passer = agent.parameters['response'];
+            var test = passer.includes("Passer");
+
             // Cette variable contient l'ID de la question
             var ID;
 
@@ -67,6 +71,10 @@ function questionsRandom(agent)
             // Variables temporaires pour les boucles
             var i,j;
 
+            //if(testDeNiveau === 0 && test === true){
+
+            //}
+
             // Vérifiez si un nouveau joueur
             if(testDeNiveau === 0) {
                 // si oui
@@ -87,7 +95,7 @@ function questionsRandom(agent)
                         variables.admin.database().ref('data/AskRandomQ').child(`${index.user_id}/${j}`).set('False');   
                 }
             } else {
-                // si non
+                    // si non
                    
                     // Ces 2 fonctions vérifient si le joueur a répondu à toutes les questions 
                     // du questionnaire au niveau du joueur

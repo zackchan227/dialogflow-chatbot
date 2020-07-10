@@ -33,9 +33,10 @@ function TCFStation(agent) {
             }
             // Réponse rapide pour les premières questions
             const quickRepliesFirstTime = new Suggestion({
-                title: `C'est la première fois que vous utilisez cette application, vous devez passer un examen pour tester votre niveau. Fini: ${fini}/10`,
+                title: `C'est la première fois que vous utilisez cette application, voulez-vous passer le test de niveau ? Fini: ${fini}/10`,
                 reply: "On y va"
             })
+            quickRepliesFirstTime.addReply_("Passer");
             quickRepliesFirstTime.addReply_("Annuler");
             agent.add(quickRepliesFirstTime);
         } else {

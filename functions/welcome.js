@@ -19,6 +19,11 @@ const index = require('./index');
        }
    });
 
+   var datetime = new Date();
+   var hh = datetime.getHours()+7;
+    if(hh>=24) 
+        hh = hh-24;
+
    return variables.rp.get( options )
    // eslint-disable-next-line promise/always-return
    .then( body => {
@@ -30,15 +35,23 @@ const index = require('./index');
            switch(lang)
            {
                case 'en':
-                   agent.add(`Hello ${body.name}‼️`);
+                   if(hh <= 12)
+                     agent.add(`Good morning ${body.name}‼️`);
+                   else if (hh <= 18)
+                     agent.add(`Good afternoon ${body.name}‼️`);
+                     else
+                        agent.add(`Good evening ${body.name}‼️`);
                    agent.add(variables.quickReplies2E);
                    break;
                case 'fr':
-                   agent.add(`Bonjour ${body.name}‼️`);
+                   if(hh <= 12)
+                        agent.add(`Bonjour ${body.name}‼️`);
+                    else
+                        agent.add(`Bonsoir ${body.name}‼️`);
                    agent.add(variables.quickReplies2F);
                    break;
                case 'vi':
-                   agent.add(`Sin trào ${body.name}‼️`);
+                   agent.add(`Xin chào ${body.name}‼️`);
                    agent.add(variables.quickReplies2V);
                    break;
            }
