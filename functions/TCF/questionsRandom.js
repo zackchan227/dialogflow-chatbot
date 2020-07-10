@@ -18,14 +18,18 @@ function questionsRandom(agent)
         return variables.ref.once(`value`).then((snapshot)=>{
 
             // Réponse du joueur
-            var passer = agent.parameters['response'];
-            var test = passer.includes("Passer");
+            //var passer = agent.parameters['response'];
+            //var test = passer.includes("Passer");
 
             // Cette variable contient l'ID de la question
             var ID;
 
             // Score du joueur
             var score = snapshot.child(`scores/${index.user_id}`).val();
+            if(score === null) {
+                variables.admin.database().ref('data/scores').child(`${index.user_id}`).set(0);
+                variables.admin.database().ref('data/levelTest').child(`${index.user_id}`).set(0);
+            }
 
             // Cette variable vérifie si le joueur a vérifié son niveau
             var testDeNiveau = snapshot.child(`levelTest/${index.user_id}`).val();
@@ -76,7 +80,7 @@ function questionsRandom(agent)
             //}
 
             // Vérifiez si un nouveau joueur
-            if(testDeNiveau === 0) {
+            if(testDeNiveau === 0 || testDeNiveau === null) {
                 // si oui
                 var fini = 0;
                 // Poser 10 questions de test de niveau...

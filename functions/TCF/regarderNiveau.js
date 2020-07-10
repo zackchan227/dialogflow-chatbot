@@ -9,7 +9,11 @@ function regarderNiveau(agent){
     var finalScore ='';
     var count = 0;
     return variables.ref.once(`value`).then((snapshot)=>{
-        valeur = snapshot.child(`scores/${index.user_id}`).val(); 
+        valeur = snapshot.child(`scores/${index.user_id}`).val();
+        if(valeur === null) {
+            variables.admin.database().ref('data/scores').child(`${index.user_id}`).set(0);
+            variables.admin.database().ref('data/levelTest').child(`${index.user_id}`).set(0);
+        } 
         temp = valeur;
         temp1 = temp;
         if(valeur < 10)
@@ -147,13 +151,9 @@ function regarderNiveau(agent){
 
             if(valeur >=2000 && valeur < 2500)
                 niveau = "🇨1️⃣";
-
-            if(valeur >=2500 && valeur <= 3000)
-                niveau = "🇨2️⃣";
             // eslint-disable-next-line promise/always-return
-            if(valeur >= 6969){
-                niveau = "Vô ∞ Cực";
-            }
+            if(valeur >=2500)
+                niveau = "🇨2️⃣";
     
         agent.add(`Votre niveau: ${niveau}`);
         agent.add(`Votre score: ${finalScore}`);

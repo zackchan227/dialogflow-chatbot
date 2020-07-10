@@ -36,6 +36,7 @@ const traduction = require('./Outils/traduction');
 const divertissementStation = require('./Divertissement/divertissementStation');
 const horoscopes = require('./Divertissement/horoscopes');
 const horoscopesChinois = require('./Divertissement/horoscopes_chinois');
+const tarots = require('./Divertissement/tarots');
 
 // Contact plug-ins
 const contactezNousStation = require('./Contact/contactezNousStation');
@@ -73,6 +74,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     function randomInt(min, max) {
         return min + Math.floor((max - min) * Math.random());
     }
+    exports.randomInt = randomInt;
     
     //Quick Reply
     const quickRepliesF = new Suggestion({
@@ -204,65 +206,6 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     // eslint-disable-next-line consistent-return
     // 
     // eslint-disable-next-line consistent-return
-    function tarots(agent){
-        //var sign = agent.parameters['horoscope'];
-        var check = false;
-        var index = randomInt(0,22) + 1;
-        if(index > 0 && index < 23)
-        {
-            check = true;
-        }
-        // var horos = ['Bélier', 'Taureau', 'Gémeaux','Cancer','Lion', 'Viegre', 'Balance', 'Scorpion','Sagittaire', 'Capricorne','Verseau','Poissons'];
-        // var check = false;
-        // var index;
-        // for(var i = 0; i < 12; i++){
-        //     if(sign === horos[i]){
-        //         check = true;
-        //         index = i+1;
-        //         break;
-        //     }
-        // }
-
-        if(check !== true){
-            agent.add(`Il y a une erreur!`);
-            //agent.add(quickRepliesTest);
-            return;
-        }
-
-        if(check === true){
-            const URL = `https://www.horoscope.com/fr/tarot/signification-de-la-carte-du-tarot.aspx?TarotCardSelectorID_numericalint=${index}`; // Crawl data from URL
-            const getPageContent = (uri) => {
-                const options = {
-                    uri,
-                    headers: {
-                    'User-Agent': 'Request-Promise'
-                    },
-                    transform: (body) => {
-                    return cheerio.load(body) // Parsing the html code
-                    }
-                }
-            
-                return rp(options) // return Promise
-            }
-
-            
-            // eslint-disable-next-line promise/catch-or-return
-            // eslint-disable-next-line consistent-return
-            return getPageContent(`${URL}`).then($ => {
-                var text = $('div.span-9.span-xs-12.col').text();
-                var text1 = '';
-                for(var i = 0; i < 1696; i++){
-                    
-                    if(i > 200 && text[i] === '\n'){
-                        break;
-                    }
-                    text1 += text[i];
-                }
-                agent.add(`${text1}`);
-                //agent.add(quickReplies2F);
-            })
-        }
-    }
 
     // // Uncomment and edit to make your own intent handler
     // // uncomment `intentMap.set('your intent name here', yourFunctionHandler);`

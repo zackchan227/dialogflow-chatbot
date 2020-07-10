@@ -55,7 +55,7 @@ function TCFStation(agent) {
             if(score >=2000 && score < 2500)
                 niveau = "C1";
 
-            if(score >=2500 && score <= 3000)
+            if(score >=2500)
                 niveau = "C2";
             
             agent.add(`Votre niveau est: ${niveau}`);

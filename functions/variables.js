@@ -140,6 +140,7 @@ const quickRepliesDivertissement = new Suggestion({
     reply: "Horoscopes"
 })
 quickRepliesDivertissement.addReply_("Horoscopes Chinois");
+quickRepliesDivertissement.addReply_("Tarots");
 exports.quickRepliesDivertissement = quickRepliesDivertissement;
 
 ////////////////////////////////////////////////////////
@@ -148,4 +149,5 @@ const quickRepliesTest = new Suggestion({
     reply: "Horoscopes"
 })
 quickRepliesTest.addReply_("Horoscopes Chinois");
+quickRepliesTest.addReply_("Tarots");
 exports.quickRepliesTest = quickRepliesTest;

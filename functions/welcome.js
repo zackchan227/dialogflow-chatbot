@@ -23,13 +23,13 @@ const index = require('./index');
    var hh = datetime.getHours()+7;
     if(hh>=24) 
         hh = hh-24;
-
+   
    return variables.rp.get( options )
    // eslint-disable-next-line promise/always-return
    .then( body => {
        if(greeting === 'yo' || greeting === 'Yo'){
            agent.add(`Yo, what's up ${body.name}‼️ Long time no see, how are you bro?`);
-           agent.add(variables.quickRepliesTest);
+           agent.add(variables.quickReplies2E);
        }
        else{
            switch(lang)
@@ -43,17 +43,17 @@ const index = require('./index');
                         agent.add(`Good evening ${body.name}‼️`);
                    agent.add(variables.quickReplies2E);
                    break;
-               case 'fr':
-                   if(hh <= 12)
-                        agent.add(`Bonjour ${body.name}‼️`);
-                    else
-                        agent.add(`Bonsoir ${body.name}‼️`);
-                   agent.add(variables.quickReplies2F);
-                   break;
                case 'vi':
                    agent.add(`Xin chào ${body.name}‼️`);
                    agent.add(variables.quickReplies2V);
                    break;
+               default:
+                    if(hh <= 12)
+                        agent.add(`Bonjour ${body.name}‼️`);
+                    else
+                        agent.add(`Bonsoir ${body.name}‼️`);
+                    agent.add(variables.quickReplies2F);
+                    break;
            }
        }
        // eslint-disable-next-line promise/no-nesting
