@@ -59,16 +59,8 @@ const index = require('./index');
        // eslint-disable-next-line promise/no-nesting
        return variables.admin.database().ref(`data`).once(`value`).then((snapshot)=>{
            var valeur;
-           var position;
-           var deja = false;
-           for(var i = 0; i< 1000; i++) {
-               valeur = snapshot.child(`userID/${i}`).val();
-               // eslint-disable-next-line promise/always-return
-               if(valeur === null) {
-                   position = i;
-                   break;
-               }
-           }
+           var position = snapshot.child(`userID`).numChildren();
+           var deja = false; // Si userID n'existe pas, cette variable sera false
            for(var j = 0; j < position; j++) {
                valeur = snapshot.child(`userID/${j}`).val();
                if(valeur === index.user_id) {
