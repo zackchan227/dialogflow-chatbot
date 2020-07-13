@@ -5,6 +5,7 @@
 // for Dialogflow fulfillment library docs, samples, and to report issues
 'use strict';
 
+// API externes
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const Facebook = require('facebook-node-sdk');
@@ -76,26 +77,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     }
     exports.randomInt = randomInt;
     
-    //Quick Reply
-    const quickRepliesF = new Suggestion({
-        title: "Que voulez-vous faire après?",
-        reply: "Suivant"
-    })
-    quickRepliesF.addReply_("Annuler");
-
-    const quickRepliesE = new Suggestion({
-        title: "What do you want to do next?",
-        reply: "Next"
-    })
-    quickRepliesE.addReply_("Cancel");
-
-    const quickRepliesV = new Suggestion({
-        title: "Muốn xem tiếp chứ?",
-        reply: "Triển luôn bạn ei"
-    })
-    quickRepliesV.addReply_("Đéo");
-
-    //Quick Reply 3
+    // //Quick Reply 3
     const quickReplies3F = new Suggestion({
         title: "Choisissez une réponse",
         reply: "Quick Reply"
@@ -144,40 +126,40 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     quickRepliesHoroscopesChinois.addReply_("🐷");
 
     // Checking the incorrect answer of user in 4 answers
-    function checkFallback(agent) {
-        return ref.once(`value`).then((snapshot)=>{
-            var ran = randomInt(0,4);
-            var a0 = snapshot.child(`answers/${id}/0`).val();
-            var a1 = snapshot.child(`answers/${id}/1`).val();
-            var a2 = snapshot.child(`answers/${id}/2`).val();
-            var a3 = snapshot.child(`answers/${id}/3`).val();
-            var text1 = `Quelle est votre bonne réponse ?`;
-            var text2 = `Votre réponse est ?`;
-            var text3 = `Choisissez une réponse ci-dessous`;
-            var text4 = `Choisissez la bonne réponse, s'il vous plaît`;
-            // eslint-disable-next-line promise/always-return
-            switch(ran)
-            {
-                case 0: agent.add(text1);
-                        break;
-                case 1: agent.add(text2);
-                        break;
-                case 2: agent.add(text3);
-                        break;
-                case 3: agent.add(text4);
-                        break; 
-            }
-            const quickReplies5 = new Suggestion({
-                title: "Choisissez une réponse",
-                reply: `${a0}`
-            })
-            quickReplies5.addReply_(`${a1}`);
-            quickReplies5.addReply_(`${a2}`);
-            quickReplies5.addReply_(`${a3}`);
+    // function checkFallback(agent) {
+    //     return ref.once(`value`).then((snapshot)=>{
+    //         var ran = randomInt(0,4);
+    //         var a0 = snapshot.child(`answers/${id}/0`).val();
+    //         var a1 = snapshot.child(`answers/${id}/1`).val();
+    //         var a2 = snapshot.child(`answers/${id}/2`).val();
+    //         var a3 = snapshot.child(`answers/${id}/3`).val();
+    //         var text1 = `Quelle est votre bonne réponse ?`;
+    //         var text2 = `Votre réponse est ?`;
+    //         var text3 = `Choisissez une réponse ci-dessous`;
+    //         var text4 = `Choisissez la bonne réponse, s'il vous plaît`;
+    //         eslint-disable-next-line promise/always-return
+    //         switch(ran)
+    //         {
+    //             case 0: agent.add(text1);
+    //                     break;
+    //             case 1: agent.add(text2);
+    //                     break;
+    //             case 2: agent.add(text3);
+    //                     break;
+    //             case 3: agent.add(text4);
+    //                     break; 
+    //         }
+    //         const quickReplies5 = new Suggestion({
+    //             title: "Choisissez une réponse",
+    //             reply: `${a0}`
+    //         })
+    //         quickReplies5.addReply_(`${a1}`);
+    //         quickReplies5.addReply_(`${a2}`);
+    //         quickReplies5.addReply_(`${a3}`);
 
-            agent.add(quickReplies5);
-        });
-    }
+    //         agent.add(quickReplies5);
+    //     });
+    // }
 
     // Obtenir l'identifiant utilisateur facebook
     // Cette variable doit être globale
@@ -200,9 +182,9 @@ exports.chatBot = functions.https.onRequest((request, response) => {
         agent.add(quickRepliesHoroscopesChinois);
     }
 
-    function contentTarots(agent){
-        //agent.add(quickRepliesHoroscopes);
-    }
+    // function contentTarots(agent){
+    //     agent.add(quickRepliesHoroscopes);
+    // }
     // eslint-disable-next-line consistent-return
     // 
     // eslint-disable-next-line consistent-return
