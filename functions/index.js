@@ -232,7 +232,7 @@ exports.chatBot = functions.https.onRequest((request, response) => {
     intentMap.set('comprehensionOrale', comprehensionOrale);
     intentMap.set('comprehensionOraleCheck', comprehensionOraleCheck);
     
-    intentMap.set('AnswersFallback', checkFallback);
+    //intentMap.set('AnswersFallback', checkFallback);
 
     intentMap.set('outilsStation', outilsStation);
     intentMap.set('Idioms', idiomes);
