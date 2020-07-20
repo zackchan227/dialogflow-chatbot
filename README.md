@@ -1,7 +1,35 @@
-# dialogflow-chatbot
-## Quiz french chatbot with dialogflow using nodejs and firebase
-
+# Mr.Lu - The Flash 
+MrLuTheFlash is a Facebook Messenger Bot integrates with Dialogflow that supports users for learning French with these features: multiple-choice questions, definition of words, synonyms; antonyms, translation, horoscopes, tarots, French proficiency assessment system (non-professional) which using NodeJS & JavaScript for back-end code, Cloud Function for Firebase to run back-end code with a serverless framework and Firebase Realtime Database to save the questions and users's data.
 &nbsp;
+
+## Table of Contents
+1. [Try Now](#try-now)
+2. [Features](#features)
+3. [Usage](#example2)
+4. [Expected Features](#expected-features)
+5. [Appendix](#Appendix)
+
+## [Try Now](https://www.facebook.com/messages/t/MrLuTheFlash)
+## Features:
+* Chat with chatbot by message
+* Answer multiple choice questions for the TCF
+* Look up common idioms and expressions
+* Translate words and phrases into Vietnamese, English, and vice versa
+* Look up definitions, synonyms and antonyms of a word
+* Entertain by viewing horoscopes, Chinese horoscopes and tarots
+* Contact the administrator and the mentor
+
+## Usage
+...
+
+## Expected Features
+* Speech-to-text messaging
+* Send file (mp3, mp4, jpg, png ...)
+* Send message periodically
+* Multi-language support
+* Smarter in conversation
+
+## Appendix
 ### <u>How to Clone a GitHub Repository using VS Code</u>
 
 Step 1 : Open Visual Studio Code
@@ -12,13 +40,13 @@ Step 3 : Type Git: Clone then Enter
 
 Step 4 : Copy this repository URL https://github.com/zackchan227/dialogflow-chatbot.git then Enter
 
-Step 5 : Select the path folder that you want to clone.
+Step 5 : Select the path folder that you want to clone
 
 Step 6 : Finish Cloning. Ta da !
 
 
 &nbsp;
-### <u>How to run "Dialogflow-chatbot"</u>
+### <u>How to deploy code to Cloud Functioon for Firebase </u>
 
 Step 1: Open terminal
 
@@ -28,7 +56,7 @@ Step 3: Type "npm install"
 
 Step 4: After modify the project, deploy to firebase by "firebase deploy" or "firebase deploy --only functions"
 
-Step 5: "Dialogflow-chatbot" is ready to serve
+Step 5: Code has been deployed
 
 &nbsp;
 ### <u>How to add a new question to the database ?</u>
