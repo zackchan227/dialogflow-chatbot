@@ -20,6 +20,7 @@ MrLuTheFlash is a Facebook Messenger Bot integrates with Dialogflow that support
 * Contact the administrator and the mentor
 
 ## Usage
+<<<<<<< HEAD
 ### [Build a program on Dialogflow](https://cloud.google.com/dialogflow/docs/quick/build-agent#create-an-agent)
 ### [Download an pre-built agent](https://drive.google.com/file/d/1aZL37R4eEenHWVx_8-Xd6JXawtoRUTjt/view?usp=sharing)
 ### [Import agent](https://cloud.google.com/dialogflow/docs/quick/build-agent#import-the-example-file-to-your-agent)
@@ -32,6 +33,9 @@ MrLuTheFlash is a Facebook Messenger Bot integrates with Dialogflow that support
 ### [Connect the webhook to Dialogflow](https://developers.google.com/assistant/conversational/df-asdk/deploy-fulfillment#connect)
 ### [Deploy Fulfillment to Cloud Function for Firebase](https://developers.google.com/assistant/conversational/df-asdk/deploy-fulfillment#deploy_to_cloud_functions_for_firebase)
 ### [Integrate Dialogflow into Facebook Messenger](https://cloud.google.com/dialogflow/docs/integrations/facebook)
+=======
+...
+>>>>>>> f42737f0f89508f0061d9d9b45650f86fca0fed7
 
 ## Expected Features
 * Speech-to-text messaging
