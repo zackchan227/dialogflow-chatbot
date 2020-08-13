@@ -1,5 +1,5 @@
-# Mr.Lu - The Flash 
-MrLuTheFlash is a Facebook Messenger Bot integrates with Dialogflow that supports users for learning French with these features: multiple-choice questions, definition of words, synonyms; antonyms, translation, horoscopes, tarots, French proficiency assessment system (non-professional) which using NodeJS & JavaScript for back-end code, Cloud Function for Firebase to run back-end code with a serverless framework and Firebase Realtime Database to save the questions and users's data.
+# Parlez Vous Francaiss 
+ParlezVousFrancaiss is a Facebook Messenger Bot integrates with Dialogflow that supports users for learning French with these features: multiple-choice questions, definition of words, synonyms; antonyms, translation, horoscopes, tarots, French proficiency assessment system (non-professional) which using NodeJS & JavaScript for back-end code, Cloud Function for Firebase to run back-end code with a serverless framework and Firebase Realtime Database to save the questions and users's data.
 &nbsp;
 
 ## Table of Contents
