@@ -9,7 +9,7 @@ MrLuTheFlash is a Facebook Messenger Bot integrates with Dialogflow that support
 4. [Expected Features](#expected-features)
 5. [Appendix](#Appendix)
 
-## [Try Now](https://www.facebook.com/messages/t/MrLuTheFlash)
+## [Try Now](https://www.facebook.com/messages/t/ParlezVousFrancaiss)
 ## Features:
 * Chat with chatbot by message
 * Answer multiple choice questions for the TCF
