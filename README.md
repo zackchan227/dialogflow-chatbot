@@ -57,7 +57,7 @@ Step 6 : Finish Cloning. Ta da !
 
 
 &nbsp;
-### <u>How to deploy code to Cloud Functioon for Firebase </u>
+### <u>How to deploy code to Cloud Function for Firebase </u>
 
 Step 1: Open terminal
 
