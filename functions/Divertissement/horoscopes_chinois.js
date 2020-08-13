@@ -1,4 +1,4 @@
-const variables = require('../variables');
+﻿const variables = require('../variables');
 const index = require('../index');
 const cheerio = require('cheerio');
 const rp = require('request-promise-native');
@@ -157,17 +157,17 @@ function horoscopesChinois(agent){
         return getPageContent(`${URL}`).then($ => {
             //console.log($('div.view-content > ul').text())
             var text = $('div.horoscope-content > p').text();
-            var text1 = '';
+            // var text1 = '';
             // eslint-disable-next-line promise/always-return
-            for(var i = 0; i < 1696; i++){
+            // for(var i = 0; i < 1696; i++){
                 
-                if(i > 200 && text[i] === '\n'){
-                    break;
-                }
-                text1 += text[i];
-            }
+            //    if(i > 200 && text[i] === '\n'){
+            //        break;
+            //    }
+            //    text1 += text[i];
+            // }
             agent.add(`Horoscopes ${sign}: `);
-            agent.add(text1);
+            agent.add(text);
             agent.add(variables.quickReplies2F);
         })
     }
